@@ -1,10 +1,10 @@
 from typing import Optional
-from datatime import datatime
+from datetime import datetime
 
 from discord import Embed, Member
 
-from discord.ext.commands import Cog
-from discord.ext.commands import command, has_permissions
+from discord.ext.commands import Cog, command
+
 
 class Info(Cog):
     def __init__(self, bot):
@@ -17,7 +17,7 @@ class Info(Cog):
         embed = Embed(
             title="User Information",
             colour=target.colour,
-            timestamp=datatime.utcnow()
+            timestamp=datetime.utcnow()
         )
 
         fields = [
@@ -25,8 +25,7 @@ class Info(Cog):
             ("Name", str(target), True),
             ("Bot", target.bot, True),
             ("Role", target.top_role.mention, True),
-            ("Status", str(target.status).title(), Ture),
-            ("Activity", f"{str(target.activity.type).split('.')[-1].title()} {target.activity.name}", True),
+            ("Status", str(target.status).title(), True),
             ("Created", target.created_at.strftime("%m/%d/%Y %H:%M:%S"), True),
             ("Joined", target.joined_at.strftime("%m/%d/%Y %H:%M:%S"), True),
             ("Boosted", bool(target.premium_since), True),
@@ -44,7 +43,7 @@ class Info(Cog):
         embed = Embed(
             title="Server Information",
             colour=ctx.guild.owner.colour,
-            timestamp=datatime.utcnow()
+            timestamp=datetime.utcnow()
         )
 
         statuses = [
@@ -60,7 +59,7 @@ class Info(Cog):
             ("Region", ctx.guild.region, True),
             ("Created", ctx.guild.created_at.strftime("%m/%d/%Y %H:%M:%S"), True),
             ("Members", len(ctx.guild.members), True),
-            ("Humans", len(list(filter(lambda m: m.bot, ctx.guild.members))), True),
+            ("Humans", len(list(filter(lambda m: not m.bot, ctx.guild.members))), True),
             ("Bots", len(list(filter(lambda m: m.bot, ctx.guild.members))), True),
             ("Statuses", f":green_circle: {statuses[0]}, :orange_circle:{statuses[1]}, :red_circle:{statuses[2]}, :white_circle:{statuses[3]}", True),
             ("Text Channels", len(ctx.guild.text_channels), True),
@@ -74,14 +73,13 @@ class Info(Cog):
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
 
-        embed.set_thumbnail(url=target.icon_url)
+        embed.set_thumbnail(url=ctx.guild.icon_url)
 
         await ctx.send(embed=embed)
 
     @Cog.listener()
     async def on_ready(self):
-        if not self.bot.ready:
-            self.bot.cogs_ready.ready_up("info")
+        pass
 
 def setup(bot):
     bot.add_cog(Info(bot))

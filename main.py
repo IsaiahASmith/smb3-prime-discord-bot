@@ -1,42 +1,67 @@
-import discord
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from os import environ
 
-from replit import db
+from discord import Intents
+from discord.ext.commands import Bot as BotBase
 
-from translate import translate, Language
+import database
 
-client = discord.Client()
-
-def add_listener(channel, name):
-    if "listeners" in db.keys():
-        listeners = db["listeners"]
-
-        listeners.append((name, channel))
-        db["listeners"] = listeners
-    else:
-        db["listeners"] = [(name, channel)]
+from info import setup as setup_info
+from translate import setup as setup_translate
 
 
-@client.event
-async def on_ready():
-    print(f"We have logged in as {client.user}")
+VERSION = "0.0.1"
+PREFIX = "+"
+COGS = [setup_info, setup_translate]
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-    
-    if message.content.startswith("$P"):
-        await message.channel.send("Hello!")
 
-    if message.content.startswith("$ES"):
-        s = message.content[3:]
-        print("message", s)
-        await message.channel.send(translate
-        (s, Language.spanish))
+class Bot(BotBase):
+    def __init__(self):
+        self.prefix = PREFIX
+        self.version = None
+        self.ready = False
+
+        self.guild = None
+        self.scheduler = AsyncIOScheduler()
+
+        super().__init__(
+            command_prefix=PREFIX, 
+            owner_id=environ['TOKEN'],
+            intents=Intents.all()
+        )
+
+    def setup(self):
+        for cog in COGS:
+            cog(self)
+
+    def run(self, version):
+        self.version = version
+
+        print("running setup")
+        self.setup()
+
+        print("running bot")
+
+        super().run(environ['TOKEN'], reconnect=True)
+
+    async def on_connect(self):
+        print(f"We have logged in")
+
+    async def on_disconnect(self):
+        print(f"We have logged out")
+
+    async def on_ready(self):
+        pass
+
+    async def on_message(self, message):
+        if not message.author.bot:
+            await self.process_commands(message)        
+
 
 if __name__ == "__main__":
-    from keep_alive import keep_alive
-    keep_alive()  # Runs a random server so the bot doesn't go to sleep.
+    #from keep_alive import keep_alive
+    #keep_alive()  # Runs a random server so the bot doesn't go to sleep.
 
-    from os import environ
-    client.run(environ['TOKEN'])
+    print("making bot")
+    bot = Bot()
+    bot.run(VERSION)

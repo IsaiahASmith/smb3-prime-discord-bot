@@ -7,9 +7,11 @@ authors = ["TheJoeSmo <<>>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 discord = "^1.7.3"
-googletrans = "^3.0.0"
 Flask = "^2.0.1"
 replit = "^3.2.0"
+APScheduler = "^3.7.0"
+translators = "^4.8.1"
+SQLAlchemy = "^1.4.22"
 
 [tool.poetry.dev-dependencies]
 
