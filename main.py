@@ -3,8 +3,9 @@ from os import environ
 
 from discord import Intents
 from discord.ext.commands import Bot as BotBase
+from discord.ext.commands import when_mentioned_or
 
-import database
+from database import session, Guild
 
 from info import setup as setup_info
 from translate import setup as setup_translate
@@ -13,6 +14,16 @@ from translate import setup as setup_translate
 VERSION = "0.0.1"
 PREFIX = "+"
 COGS = [setup_info, setup_translate]
+
+
+def get_prefix(bot, message):
+    prefix = session.query(Guild, Guild.guild_id).filter(Guild.guild_id == message.guild.id).scalar()
+
+    if prefix is None:
+        prefix = PREFIX
+        session.add(Guild(guild_id=message.guild.id, prefix=prefix))
+
+    return when_mentioned_or(prefix)(bot, message)
 
 
 class Bot(BotBase):
@@ -25,7 +36,7 @@ class Bot(BotBase):
         self.scheduler = AsyncIOScheduler()
 
         super().__init__(
-            command_prefix=PREFIX, 
+            command_prefix=get_prefix, 
             owner_id=environ['TOKEN'],
             intents=Intents.all()
         )
