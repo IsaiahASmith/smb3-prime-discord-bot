@@ -7,28 +7,37 @@ from discord.ext.commands import when_mentioned_or
 
 from database import session, Guild
 
+from core import setup as setup_core
+from log import setup as setup_log
 from info import setup as setup_info
 from translate import setup as setup_translate
 
 
 VERSION = "0.0.1"
-PREFIX = "+"
-COGS = [setup_info, setup_translate]
+COGS = [setup_core, setup_log, setup_info, setup_translate]
 
 
 def get_prefix(bot, message):
-    prefix = session.query(Guild, Guild.guild_id).filter(Guild.guild_id == message.guild.id).scalar()
+    guild = session.query(Guild).filter(Guild.guild_id == message.guild.id).first()
 
-    if prefix is None:
-        prefix = PREFIX
+    try:
+        prefix = guild.prefix
+    except AttributeError:
+        prefix = "+"
         session.add(Guild(guild_id=message.guild.id, prefix=prefix))
+        session.commit()
+
+    if len(prefix) > 5:
+        # The prefix got fucked up, fix it
+        print("Resetting the prefix")
+        guild.prefix = "+"
+        session.commit()
 
     return when_mentioned_or(prefix)(bot, message)
 
 
 class Bot(BotBase):
     def __init__(self):
-        self.prefix = PREFIX
         self.version = None
         self.ready = False
 
