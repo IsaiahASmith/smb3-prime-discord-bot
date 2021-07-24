@@ -5,6 +5,7 @@ from discord.ext.commands import Cog, command, has_permissions
 
 from database import session, Channel, ChannelGroup, ChannelGroupChannel
 
+from translate import translate
 
 class ChannelManager(Cog):
     def __init__(self, bot):
@@ -59,7 +60,7 @@ class ChannelManager(Cog):
             return
 
         group = session.query(ChannelGroup).filter(ChannelGroup.id == group_id).first()
-        if group.guild_id != ctx.guild.id or group is None:
+        if group is None or group.guild.id != ctx.guild.id:
             """Either we specified a forbidden group ID or the group does not exist"""
             await ctx.send(f"Group {group_id} was not found.")
             return
@@ -109,19 +110,29 @@ class ChannelManager(Cog):
                     channel.id == ChannelGroupChannel.channel_id
                 )
 
-                embed = Embed(
-                    colour=message.author.colour,
-                    description=message.content,
-                    timestamp=datetime.utcnow()
-                )
-
-                embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
-
                 sent_channels = {channel.id}
                 for channel_group in channel_groups:
                     for channel in channel_group.channels:
                         if channel.id not in sent_channels:
                             discord_channel = self.bot.get_channel(channel.id)
+                            language = session.query(Channel.language).filter(Channel.id == discord_channel.id).first()[0]
+
+                            if language is None:
+                                embed = Embed(
+                                    colour=message.author.colour,
+                                    description=message.content,
+                                    timestamp=datetime.utcnow()
+                                )
+                            else:
+                                translation = translate(message.content, language)
+                                embed = Embed(
+                                    colour=message.author.colour,
+                                    description=translation,
+                                    timestamp=datetime.utcnow()
+                                )
+
+                            embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
+
                             await discord_channel.send(embed=embed)
                             sent_channels.add(channel.id)
 
