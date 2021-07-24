@@ -1,6 +1,5 @@
 # pip install google_trans==3.1.0a0 => this is the correct install for some weird ass reason.
 from typing import Optional
-from enum import Enum
 
 from discord.ext.commands import Cog, command
 
@@ -8,10 +7,7 @@ import translators as ts
 
 from database import session, Channel
 
-
-class Language(Enum):
-    english = "en"
-    spanish = "es"
+from Language import Language
 
 
 language_codes = {
@@ -33,7 +29,7 @@ class Translate(Cog):
 
     @command(name="set_channel_language")
     async def set_channel_language(self, ctx, channel_id: Optional[int], language_code: str):
-        channel_id = channel_id or ctx.id
+        channel_id = channel_id or ctx.channel.id
 
         channel = session.query(Channel).filter(Channel.id == channel_id).first()
         if channel is None:
