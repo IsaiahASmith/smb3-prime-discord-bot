@@ -10,11 +10,12 @@ from database import session, Guild
 from core import setup as setup_core
 from log import setup as setup_log
 from info import setup as setup_info
+from channel_manager import setup as channel_manager_setup
 from translate import setup as setup_translate
 
 
 VERSION = "0.0.1"
-COGS = [setup_core, setup_log, setup_info, setup_translate]
+COGS = [setup_core, setup_log, setup_info, channel_manager_setup, setup_translate]
 
 
 def get_prefix(bot, message):

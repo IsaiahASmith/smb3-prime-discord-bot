@@ -15,7 +15,7 @@ class Core(Cog):
         if len(new) > 5:
             await ctx.send("The prefix can not be more than five characters in length.")
         else:
-            guild = session.query(Guild).filter(Guild.guild_id == ctx.guild.id).first()
+            guild = session.query(Guild).filter(Guild.id == ctx.guild.id).first()
             guild.prefix = new
             session.commit()
             await ctx.send(f"Prefix set to {new}.")
