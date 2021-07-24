@@ -30,7 +30,6 @@ class ChannelManager(Cog):
 
         await ctx.send(embed=embed)
 
-
     @command(name="register_channel_group", aliases=["rcg"])
     @has_permissions(manage_guild=True)
     async def register_channel_group(self, ctx, channel_name):
@@ -41,8 +40,11 @@ class ChannelManager(Cog):
     @command(name="remove_channel_group", aliases=["rem_cg"])
     @has_permissions(manage_guild=True)
     async def remove_channel_group(self, ctx, group_id: int):
-        print("removing", channel_name)
+        print("removing", group_id)
         group = session.query(ChannelGroup).filter(ChannelGroup.id == group_id).first()
+        if group.guild_id != ctx.guild.id or group is None:
+            await ctx.send(f"Group {group_id} was not found.")
+            return
         session.delete(group)
         session.commit()
 
