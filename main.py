@@ -19,13 +19,13 @@ COGS = [setup_core, setup_log, setup_info, channel_manager_setup, setup_translat
 
 
 def get_prefix(bot, message):
-    guild = session.query(Guild).filter(Guild.guild_id == message.guild.id).first()
+    guild = session.query(Guild).filter(Guild.id == message.guild.id).first()
 
     try:
         prefix = guild.prefix
     except AttributeError:
         prefix = "+"
-        session.add(Guild(guild_id=message.guild.id, prefix=prefix))
+        session.add(Guild(id=message.guild.id, prefix=prefix))
         session.commit()
 
     if len(prefix) > 5:

@@ -10,22 +10,46 @@ class ChannelManager(Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @command(name="channel_groups", aliases=["cg"])
+    @has_permissions(manage_guild=True)
+    async def channel_groups(self, ctx):
+        groups = session.query(ChannelGroup).filter(ChannelGroup.guild_id == ctx.guild.id)
+
+        embed = Embed(
+            title="Channel Groups",
+            colour=ctx.author.colour,
+            timestamp=datetime.utcnow()
+        )
+
+        fields = [
+            (group.name, group.id, False) for group in groups
+        ]
+
+        for name, value, inline in fields:
+            embed.add_field(name=name, value=value, inline=inline)
+
+        await ctx.send(embed=embed)
+
+
     @command(name="register_channel_group", aliases=["rcg"])
     @has_permissions(manage_guild=True)
     async def register_channel_group(self, ctx, channel_name):
+        print("adding", channel_name)
         session.add(ChannelGroup(guild_id=ctx.guild.id, name=channel_name))
         session.commit()
 
     @command(name="remove_channel_group", aliases=["rem_cg"])
     @has_permissions(manage_guild=True)
     async def remove_channel_group(self, ctx, group_id: int):
+        print("removing", channel_name)
         group = session.query(ChannelGroup).filter(ChannelGroup.id == group_id).first()
         session.delete(group)
         session.commit()
 
     @command(name="register_channel", aliases=["rc"])
     @has_permissions(manage_guild=True)
-    async def register_channel(self, ctx, channel_id, group_id):
+    async def register_channel(self, ctx, channel_id: int, group_id: int):
+        print("adding", channel_id, group_id)
         channel_ids = {channel.id for channel in ctx.guild.channels}
         if channel_id not in channel_ids:
             """The channel id was not found"""
@@ -43,12 +67,13 @@ class ChannelManager(Cog):
             """The channel has not been initialized, so create it"""
             session.add(Channel(id=channel_id, guild_id=ctx.guild.id))
 
-        session.add(ChannelGroupChannel(channel_group_id=group.id, channel_id=channel.id))
+        session.add(ChannelGroupChannel(channel_group_id=group.id, channel_id=channel_id))
         session.commit()
 
     @command(name="unregister_channel", aliases=["urc"])
     @has_permissions(manage_guild=True)
     async def unregister_channel(self, ctx, channel_id, group_id):
+        print("removing", channel_id, group_id)
         channel_ids = {channel.id for channel in ctx.guild.channels}
         if channel_id not in channel_ids:
             """The channel id was not found"""
@@ -82,8 +107,6 @@ class ChannelManager(Cog):
                     channel.id == ChannelGroupChannel.channel_id
                 )
 
-                print("channel groups", channel_groups)
-
                 embed = Embed(
                     colour=message.author.colour,
                     description=message.content,
@@ -96,7 +119,8 @@ class ChannelManager(Cog):
                 for channel_group in channel_groups:
                     for channel in channel_group.channels:
                         if channel.id not in sent_channels:
-                            await channel.send(embed=embed)
+                            discord_channel = self.bot.get_channel(channel.id)
+                            await discord_channel.send(embed=embed)
                             sent_channels.add(channel.id)
 
     @Cog.listener()
