@@ -7,11 +7,11 @@ from discord.ext.commands import when_mentioned_or
 
 from database import session, Guild
 
-from core import setup as setup_core
-from log import setup as setup_log
-from info import setup as setup_info
-from channel_manager import setup as channel_manager_setup
-from translate import setup as setup_translate
+from cogs.core import setup as setup_core
+from cogs.log import setup as setup_log
+from cogs.info import setup as setup_info
+from cogs.channel_manager import setup as channel_manager_setup
+from cogs.translate import setup as setup_translate
 
 
 VERSION = "0.0.1"
