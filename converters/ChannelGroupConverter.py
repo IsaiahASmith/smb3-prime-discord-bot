@@ -33,7 +33,7 @@ class ChannelGroupConverter(Converter):
     async def convert(self, ctx, argument) -> Optional[ChannelGroup]:
         try:
             group_id = int(argument)
-        except TypeError:
+        except ValueError:
             groups = validate_guild_from_name(argument, ctx.guild.id)
             if groups is None:
                 raise CommandError(f"Group was unable to be found with name: {argument!s}")
