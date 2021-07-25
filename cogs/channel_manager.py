@@ -41,13 +41,15 @@ def list_groups_to_embed(
 def get_group_channels(group: ChannelGroup) -> Set[Channel]:
     """Finds every channel a group contains"""
     return {
-        channel for channel in session.query(ChannelGroupChannel).filter(
+        channel for channel in 
+        session.query(Channel).join(ChannelGroupChannel).filter(
             ChannelGroupChannel.channel_group_id == group.id
         )
     }
 
 
 def group_to_embed(
+        bot,
         group: ChannelGroup,
         title: str = "Channel Group",
         colour: Optional[Colour] = None
@@ -64,7 +66,10 @@ def group_to_embed(
 
     fields = [
         Field(f"Group: {group.name}", f"ID: {group.id}", False),
-        *[Field(channel.name, channel.id, True) for channel in channels]
+        *[
+            Field(bot.get_channel(channel.id).name, channel.id, True) 
+            for channel in channels
+        ]
     ]
 
     for field in fields:
@@ -100,13 +105,13 @@ class ChannelManager(Cog):
         group = ChannelGroup(guild_id=ctx.guild.id, name=channel_name)
         session.add(group)
         session.commit()
-        embed = group_to_embed(group, "Registered Channel Group", ctx.author.colour)
+        embed = group_to_embed(self.bot, group, "Registered Channel Group", ctx.author.colour)
         await ctx.send(embed=embed)
 
     @command(name="remove_channel_group", aliases=["rem_cg"])
     @has_permissions(manage_guild=True)
     async def remove_channel_group(self, ctx, group: ChannelGroupConverter):
-        embed = group_to_embed(group, "Removed Channel Group", ctx.author.colour)
+        embed = group_to_embed(self.bot, group, "Removed Channel Group", ctx.author.colour)
         session.delete(group)
         session.commit()
         await ctx.send(embed=embed)
@@ -114,10 +119,9 @@ class ChannelManager(Cog):
     @command(name="register_channel", aliases=["rc"])
     @has_permissions(manage_guild=True)
     async def register_channel(self, ctx, channel: ChannelConverter, group: ChannelGroupConverter):
-        group = ChannelGroupChannel(channel_group_id=group.id, channel_id=channel.id)
-        session.add(group)
+        session.add(ChannelGroupChannel(channel_group_id=group.id, channel_id=channel.id))
         session.commit()
-        embed = group_to_embed(group, "Channels Registered", ctx.author.colour)
+        embed = group_to_embed(self.bot, group, "Channels Registered", ctx.author.colour)
         await ctx.send(embed=embed)
 
     @command(name="unregister_channel", aliases=["urc"])
@@ -131,7 +135,7 @@ class ChannelManager(Cog):
         )
         session.delete(channel_group_channel)
         session.commit()
-        embed = group_to_embed(group, "Channels Registered", ctx.author.colour)
+        embed = group_to_embed(self.bot, group, "Channels Registered", ctx.author.colour)
         await ctx.send(embed=embed)
 
     @Cog.listener()
