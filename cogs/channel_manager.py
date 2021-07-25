@@ -1,9 +1,8 @@
 from typing import List, Set, Optional, Callable
 from datetime import datetime
 
-from discord import Embed, Colour, Emoji, TextChannel
+from discord import Embed, Colour, TextChannel
 from discord.ext.commands import Cog, command, has_permissions
-from discord.utils import get
 
 from converters.ChannelConverter import ChannelConverter
 from converters.ChannelGroupConverter import ChannelGroupConverter
@@ -13,15 +12,6 @@ from cogs.translate import translate
 
 from Language import Language
 from Field import Field
-
-
-emoji_names = [
-    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"
-]
-
-
-def get_emoji(guild, emoji_name) -> Emoji:
-    return get(guild.emojis, name=emoji_name)
 
 
 def get_groups_by_guild(guild_id: int):

@@ -4,7 +4,7 @@ from discord.ext.commands import Converter, CommandError
 
 from Option import Option
 from Response import Response
-from cogs.channel_manager import emoji_names, get_emoji
+from emojis import emoji_names, get_emoji
 from cogs.options import Options
 from database import ChannelGroup, session
 
