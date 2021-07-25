@@ -133,9 +133,6 @@ class Log(Cog):
             embed.set_thumbnail(url=message.author.avatar_url)
             await self.bot.get_channel(_channel_id).send(embed=embed)
 
-    @Cog.listener()
-    async def on_ready(self):
-        pass
 
 def setup(bot):
     bot.add_cog(Log(bot))

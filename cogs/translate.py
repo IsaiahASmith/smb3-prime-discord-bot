@@ -50,10 +50,6 @@ class Translate(Cog):
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
         await ctx.send(embed=embed)
 
-    @Cog.listener()
-    async def on_ready(self):
-        pass
-
 
 def setup(bot):
     bot.add_cog(Translate(bot))

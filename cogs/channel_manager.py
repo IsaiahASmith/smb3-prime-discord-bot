@@ -176,10 +176,6 @@ class ChannelManager(Cog):
                     await discord_channel.send(embed=embed_creator(channel.language))
                     sent_channels.add(channel.id)
 
-    @Cog.listener()
-    async def on_ready(self):
-        pass
-
 
 def setup(bot):
     bot.add_cog(ChannelManager(bot))

@@ -43,10 +43,6 @@ class Options(Cog):
             return None
         return result
 
-    @Cog.listener()
-    async def on_ready(self):
-        pass
-
 
 def setup(bot):
     bot.add_cog(Options(bot))

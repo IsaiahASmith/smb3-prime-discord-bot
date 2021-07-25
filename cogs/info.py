@@ -77,9 +77,6 @@ class Info(Cog):
 
         await ctx.send(embed=embed)
 
-    @Cog.listener()
-    async def on_ready(self):
-        pass
 
 def setup(bot):
     bot.add_cog(Info(bot))

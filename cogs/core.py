@@ -25,9 +25,6 @@ class Core(Cog):
         if isinstance(exc, CheckFailure):
             await ctx.send("You need the Manage Message permission to do that.")
 
-    @Cog.listener()
-    async def on_ready(self):
-        pass
 
 def setup(bot):
     bot.add_cog(Core(bot))
