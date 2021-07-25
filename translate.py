@@ -1,4 +1,3 @@
-# pip install google_trans==3.1.0a0 => this is the correct install for some weird ass reason.
 from typing import Optional
 
 from discord.ext.commands import Cog, command
@@ -52,6 +51,7 @@ class Translate(Cog):
     @Cog.listener()
     async def on_ready(self):
         pass
+
 
 def setup(bot):
     bot.add_cog(Translate(bot))
