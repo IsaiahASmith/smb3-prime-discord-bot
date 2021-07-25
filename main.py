@@ -3,9 +3,6 @@ from os import environ
 
 from discord import Intents
 from discord.ext.commands import Bot as BotBase
-from discord.ext.commands import when_mentioned_or
-
-from database import session, Guild
 
 from cogs.core import setup as setup_core
 from cogs.log import setup as setup_log
@@ -13,29 +10,11 @@ from cogs.options import setup as setup_options
 from cogs.info import setup as setup_info
 from cogs.channel_manager import setup as channel_manager_setup
 from cogs.translate import setup as setup_translate
+from prefix import get_prefix
 
 
 VERSION = "0.0.1"
 COGS = [setup_core, setup_log, setup_options, setup_info, channel_manager_setup, setup_translate]
-
-
-def get_prefix(bot, message):
-    guild = session.query(Guild).filter(Guild.id == message.guild.id).first()
-
-    try:
-        prefix = guild.prefix
-    except AttributeError:
-        prefix = "+"
-        session.add(Guild(id=message.guild.id, prefix=prefix))
-        session.commit()
-
-    if len(prefix) > 5:
-        # The prefix got fucked up, fix it
-        print("Resetting the prefix")
-        guild.prefix = "+"
-        session.commit()
-
-    return when_mentioned_or(prefix)(bot, message)
 
 
 class Bot(BotBase):

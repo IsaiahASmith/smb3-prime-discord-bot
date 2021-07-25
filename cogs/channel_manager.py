@@ -13,6 +13,8 @@ from cogs.translate import translate
 from Language import Language
 from Field import Field
 
+from prefix import get_prefix
+
 
 def get_groups_by_guild(guild_id: int):
     """Finds all the groups a guild has"""
@@ -140,7 +142,7 @@ class ChannelManager(Cog):
 
     @Cog.listener()
     async def on_message(self, message):
-        if not message.author.bot:
+        if not message.author.bot and not message.content.startswith(get_prefix(self.bot, message)):
             def embed_creator(language: Optional[Language]) -> Embed:
                 if language is None:
                     embed = Embed(
