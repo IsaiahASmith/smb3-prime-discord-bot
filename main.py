@@ -9,13 +9,14 @@ from database import session, Guild
 
 from cogs.core import setup as setup_core
 from cogs.log import setup as setup_log
+from cogs.options import setup as setup_options
 from cogs.info import setup as setup_info
 from cogs.channel_manager import setup as channel_manager_setup
 from cogs.translate import setup as setup_translate
 
 
 VERSION = "0.0.1"
-COGS = [setup_core, setup_log, setup_info, channel_manager_setup, setup_translate]
+COGS = [setup_core, setup_log, setup_options, setup_info, channel_manager_setup, setup_translate]
 
 
 def get_prefix(bot, message):
@@ -41,6 +42,7 @@ class Bot(BotBase):
     def __init__(self):
         self.version = None
         self.ready = False
+        self.cogs_lookup = {}
 
         self.guild = None
         self.scheduler = AsyncIOScheduler()
@@ -53,7 +55,8 @@ class Bot(BotBase):
 
     def setup(self):
         for cog in COGS:
-            cog(self)
+            c = cog(self)
+            self.cogs_lookup.update({c.__class__.__name__: c})
 
     def run(self, version):
         self.version = version

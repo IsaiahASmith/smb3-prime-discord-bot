@@ -1,11 +1,96 @@
+from typing import List, Set, Optional, Callable
 from datetime import datetime
 
-from discord import Embed
+from discord import Embed, Colour, Emoji, TextChannel
 from discord.ext.commands import Cog, command, has_permissions
+from discord.utils import get
 
+from converters.ChannelConverter import ChannelConverter
+from converters.ChannelGroupConverter import ChannelGroupConverter
 from database import session, Channel, ChannelGroup, ChannelGroupChannel
 
 from cogs.translate import translate
+
+from Language import Language
+from Field import Field
+
+
+emoji_names = [
+    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"
+]
+
+
+def get_emoji(guild, emoji_name) -> Emoji:
+    return get(guild.emojis, name=emoji_name)
+
+
+def get_groups_by_guild(guild_id: int):
+    """Finds all the groups a guild has"""
+    return session.query(ChannelGroup).filter(ChannelGroup.guild_id == guild_id)
+
+
+def list_groups_to_embed(
+        groups: List[ChannelGroup],
+        title: str = "Channel Groups",
+        colour: Optional[Colour] = None
+) -> Embed:
+    colour = colour or Colour.default()
+    embed = Embed(
+        title=title,
+        colour=colour,
+        timestamp=datetime.utcnow()
+    )
+
+    fields = [Field(group.name, group.id, False) for group in groups]
+    for field in fields:
+        field.add_to_embed(embed)
+
+    return embed
+
+
+def get_group_channels(group: ChannelGroup) -> Set[Channel]:
+    """Finds every channel a group contains"""
+    return {
+        channel for channel in session.query(ChannelGroupChannel).filter(
+            ChannelGroupChannel.channel_group_id == group.id
+        )
+    }
+
+
+def group_to_embed(
+        group: ChannelGroup,
+        title: str = "Channel Group",
+        colour: Optional[Colour] = None
+) -> Embed:
+    """Provides an embed for a group"""
+    colour = colour or Colour.default()
+    embed = Embed(
+        title=title,
+        colour=colour,
+        timestamp=datetime.utcnow()
+    )
+
+    channels = get_group_channels(group)
+
+    fields = [
+        Field(f"Group: {group.name}", f"ID: {group.id}", False),
+        *[Field(channel.name, channel.id, True) for channel in channels]
+    ]
+
+    for field in fields:
+        field.add_to_embed(embed)
+
+    return embed
+
+
+def get_groups_from_channel(channel: TextChannel) -> Set[ChannelGroup]:
+    """Finds every group a channel is associated with"""
+    return {
+        group for group in
+        session.query(ChannelGroup).join(ChannelGroupChannel).join(Channel).filter(
+            channel.id == ChannelGroupChannel.channel_id
+        )
+    }
 
 
 class ChannelManager(Cog):
@@ -15,126 +100,84 @@ class ChannelManager(Cog):
     @command(name="channel_groups", aliases=["cg"])
     @has_permissions(manage_guild=True)
     async def channel_groups(self, ctx):
-        groups = session.query(ChannelGroup).filter(ChannelGroup.guild_id == ctx.guild.id)
-
-        embed = Embed(title="Channel Groups", colour=ctx.author.colour, timestamp=datetime.utcnow())
-
-        fields = [(group.name, group.id, False) for group in groups]
-
-        for name, value, inline in fields:
-            embed.add_field(name=name, value=value, inline=inline)
-
+        groups = get_groups_by_guild(ctx.guild.id)
+        embed = list_groups_to_embed(groups, colour=ctx.author.colour)
         await ctx.send(embed=embed)
 
     @command(name="register_channel_group", aliases=["rcg"])
     @has_permissions(manage_guild=True)
     async def register_channel_group(self, ctx, channel_name):
-        print("adding", channel_name)
-        session.add(ChannelGroup(guild_id=ctx.guild.id, name=channel_name))
+        group = ChannelGroup(guild_id=ctx.guild.id, name=channel_name)
+        session.add(group)
         session.commit()
+        embed = group_to_embed(group, "Registered Channel Group", ctx.author.colour)
+        await ctx.send(embed=embed)
 
     @command(name="remove_channel_group", aliases=["rem_cg"])
     @has_permissions(manage_guild=True)
-    async def remove_channel_group(self, ctx, group_id: int):
-        print("removing", group_id)
-        group = session.query(ChannelGroup).filter(ChannelGroup.id == group_id).first()
-        if group.guild_id != ctx.guild.id or group is None:
-            await ctx.send(f"Group {group_id} was not found.")
-            return
+    async def remove_channel_group(self, ctx, group: ChannelGroupConverter):
+        embed = group_to_embed(group, "Removed Channel Group", ctx.author.colour)
         session.delete(group)
         session.commit()
+        await ctx.send(embed=embed)
 
     @command(name="register_channel", aliases=["rc"])
     @has_permissions(manage_guild=True)
-    async def register_channel(self, ctx, channel_id: int, group_id: int):
-        print("adding", channel_id, group_id)
-        channel_ids = {channel.id for channel in ctx.guild.channels}
-        if channel_id not in channel_ids:
-            """The channel id was not found"""
-            await ctx.send(f"Channel {channel_id} was not found")
-            return
-
-        group = session.query(ChannelGroup).filter(ChannelGroup.id == group_id).first()
-        if group is None or group.guild.id != ctx.guild.id:
-            """Either we specified a forbidden group ID or the group does not exist"""
-            await ctx.send(f"Group {group_id} was not found.")
-            return
-
-        channel = session.query(Channel).filter(Channel.id == channel_id).first()
-        if channel is None:
-            """The channel has not been initialized, so create it"""
-            session.add(Channel(id=channel_id, guild_id=ctx.guild.id))
-
-        session.add(ChannelGroupChannel(channel_group_id=group.id, channel_id=channel_id))
+    async def register_channel(self, ctx, channel: ChannelConverter, group: ChannelGroupConverter):
+        session.add(ChannelGroupChannel(channel_group_id=group.id, channel_id=channel.id))
         session.commit()
+        embed = group_to_embed(group, "Channels Registered", ctx.author.colour)
+        await ctx.send(embed=embed)
 
     @command(name="unregister_channel", aliases=["urc"])
     @has_permissions(manage_guild=True)
-    async def unregister_channel(self, ctx, channel_id, group_id):
-        print("removing", channel_id, group_id)
-        channel_ids = {channel.id for channel in ctx.guild.channels}
-        if channel_id not in channel_ids:
-            """The channel id was not found"""
-            await ctx.send(f"Channel {channel_id} was not found")
-            return
-
-        group = session.query(ChannelGroup).filter(ChannelGroup.id == group_id).first()
-        if group.guild_id != ctx.guild.id or group is None:
-            """Either we specified a forbidden group ID or the group does not exist"""
-            await ctx.send(f"Group {group_id} was not found.")
-            return
-
-        channel = session.query(Channel).filter(Channel.id == channel_id).first()
-        if channel is None:
-            """The channel has not been initialized, so do not do anything"""
-            return
-
+    async def unregister_channel(self, ctx, channel: ChannelConverter, group: ChannelGroupConverter):
         channel_group_channel = (
             session.query(ChannelGroupChannel)
-            .filter((ChannelGroupChannel.channel_group_id == group.id) & (ChannelGroupChannel.channel_id == channel.id))
-            .first()
+                .filter(
+                (ChannelGroupChannel.channel_group_id == group.id) & (ChannelGroupChannel.channel_id == channel.id))
+                .first()
         )
         session.delete(channel_group_channel)
         session.commit()
+        embed = group_to_embed(group, "Channels Registered", ctx.author.colour)
+        await ctx.send(embed=embed)
 
     @Cog.listener()
     async def on_message(self, message):
         if not message.author.bot:
-            channel = session.query(Channel).filter(Channel.id == message.channel.id).first()
+            def embed_creator(language: Optional[Language]) -> Embed:
+                if language is None:
+                    embed = Embed(
+                        colour=message.author.colour,
+                        description=message.content,
+                        timestamp=datetime.utcnow(),
+                    )
+                else:
+                    translation = translate(message.content, language)
+                    embed = Embed(
+                        colour=message.author.colour, description=translation, timestamp=datetime.utcnow()
+                    )
 
-            if channel is not None:
-                channel_groups = (
-                    session.query(ChannelGroup)
-                    .join(ChannelGroupChannel)
-                    .join(Channel)
-                    .filter(channel.id == ChannelGroupChannel.channel_id)
-                )
+                embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
+                return embed
 
-                sent_channels = {channel.id}
-                for channel_group in channel_groups:
-                    for channel in channel_group.channels:
-                        if channel.id not in sent_channels:
-                            discord_channel = self.bot.get_channel(channel.id)
-                            language = (
-                                session.query(Channel.language).filter(Channel.id == discord_channel.id).first()[0]
-                            )
+            await self.send_once(get_groups_from_channel(message.channel), embed_creator, {message.channel.id})
 
-                            if language is None:
-                                embed = Embed(
-                                    colour=message.author.colour,
-                                    description=message.content,
-                                    timestamp=datetime.utcnow(),
-                                )
-                            else:
-                                translation = translate(message.content, language)
-                                embed = Embed(
-                                    colour=message.author.colour, description=translation, timestamp=datetime.utcnow()
-                                )
-
-                            embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
-
-                            await discord_channel.send(embed=embed)
-                            sent_channels.add(channel.id)
+    async def send_once(
+            self,
+            channel_groups: Set[ChannelGroup],
+            embed_creator: Callable[[Optional[Language]], Embed],
+            sent: Optional[Set[int]] = None
+    ):
+        """Sends a message to every channel in channel groups only once"""
+        sent_channels = sent or set()
+        for channel_group in channel_groups:
+            for channel in channel_group.channels:
+                if channel.id not in sent_channels:
+                    discord_channel = self.bot.get_channel(channel.id)
+                    await discord_channel.send(embed=embed_creator(channel.language))
+                    sent_channels.add(channel.id)
 
     @Cog.listener()
     async def on_ready(self):
