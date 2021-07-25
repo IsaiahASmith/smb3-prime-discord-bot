@@ -34,8 +34,8 @@ class Translate(Cog):
 
         discord_channel = self.bot.get_channel(channel.id)
         embed = Embed(
-            title=f"Updated Channel {discord_channel.name}",
-            description=f"Changed {discord_channel.name} language to {channel.language.value}",
+            title=f"Updated Channel {discord_channel}",
+            description=f"Changed {discord_channel} language to {channel.language.value}",
             colour=ctx.author.colour,
             timestamp=datetime.utcnow()
         )
