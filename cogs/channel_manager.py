@@ -5,7 +5,8 @@ from discord.ext.commands import Cog, command, has_permissions
 
 from database import session, Channel, ChannelGroup, ChannelGroupChannel
 
-from translate import translate
+from cogs.translate import translate
+
 
 class ChannelManager(Cog):
     def __init__(self, bot):
@@ -16,15 +17,9 @@ class ChannelManager(Cog):
     async def channel_groups(self, ctx):
         groups = session.query(ChannelGroup).filter(ChannelGroup.guild_id == ctx.guild.id)
 
-        embed = Embed(
-            title="Channel Groups",
-            colour=ctx.author.colour,
-            timestamp=datetime.utcnow()
-        )
+        embed = Embed(title="Channel Groups", colour=ctx.author.colour, timestamp=datetime.utcnow())
 
-        fields = [
-            (group.name, group.id, False) for group in groups
-        ]
+        fields = [(group.name, group.id, False) for group in groups]
 
         for name, value, inline in fields:
             embed.add_field(name=name, value=value, inline=inline)
@@ -94,9 +89,11 @@ class ChannelManager(Cog):
             """The channel has not been initialized, so do not do anything"""
             return
 
-        channel_group_channel = session.query(ChannelGroupChannel).filter(
-            (ChannelGroupChannel.channel_group_id == group.id) & (ChannelGroupChannel.channel_id == channel.id)
-        ).first()
+        channel_group_channel = (
+            session.query(ChannelGroupChannel)
+            .filter((ChannelGroupChannel.channel_group_id == group.id) & (ChannelGroupChannel.channel_id == channel.id))
+            .first()
+        )
         session.delete(channel_group_channel)
         session.commit()
 
@@ -106,8 +103,11 @@ class ChannelManager(Cog):
             channel = session.query(Channel).filter(Channel.id == message.channel.id).first()
 
             if channel is not None:
-                channel_groups = session.query(ChannelGroup).join(ChannelGroupChannel).join(Channel).filter(
-                    channel.id == ChannelGroupChannel.channel_id
+                channel_groups = (
+                    session.query(ChannelGroup)
+                    .join(ChannelGroupChannel)
+                    .join(Channel)
+                    .filter(channel.id == ChannelGroupChannel.channel_id)
                 )
 
                 sent_channels = {channel.id}
@@ -115,20 +115,20 @@ class ChannelManager(Cog):
                     for channel in channel_group.channels:
                         if channel.id not in sent_channels:
                             discord_channel = self.bot.get_channel(channel.id)
-                            language = session.query(Channel.language).filter(Channel.id == discord_channel.id).first()[0]
+                            language = (
+                                session.query(Channel.language).filter(Channel.id == discord_channel.id).first()[0]
+                            )
 
                             if language is None:
                                 embed = Embed(
                                     colour=message.author.colour,
                                     description=message.content,
-                                    timestamp=datetime.utcnow()
+                                    timestamp=datetime.utcnow(),
                                 )
                             else:
                                 translation = translate(message.content, language)
                                 embed = Embed(
-                                    colour=message.author.colour,
-                                    description=translation,
-                                    timestamp=datetime.utcnow()
+                                    colour=message.author.colour, description=translation, timestamp=datetime.utcnow()
                                 )
 
                             embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
