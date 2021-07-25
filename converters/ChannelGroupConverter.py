@@ -11,18 +11,23 @@ from database import ChannelGroup, session
 
 def validate_guild_from_similar_name(name: str, guild_id: int) -> Optional[List[ChannelGroup]]:
     """Tries to find groups with a similar name or None with respect to to permission"""
-    return session.query(ChannelGroup).filter(
-        (ChannelGroup.guild_id == guild_id) & (ChannelGroup.name.ilike(f"%{name}%"))
-    )
+    return [session.query(ChannelGroup).filter(
+            group for group in
+            (ChannelGroup.guild_id == guild_id) & (ChannelGroup.name.ilike(f"%{name}%"))
+        )
+    ]
 
 
 def validate_guild_from_name(name: str, guild_id: int) -> Optional[List[ChannelGroup]]:
     """Tries to find groups with valid names or None with respect to permission"""
-    groups = session.query(ChannelGroup).filter(
-        (ChannelGroup.guild_id == guild_id) & (ChannelGroup.name == name)
-    )
+    groups = [
+        group for group in
+        session.query(ChannelGroup).filter(
+            (ChannelGroup.guild_id == guild_id) & (ChannelGroup.name == name)
+        )
+    ]
 
-    if len(groups == 0):
+    if len(groups) == 0:
         # Try a broader search
         return validate_guild_from_similar_name(name, guild_id)
     return groups
@@ -38,7 +43,7 @@ class ChannelGroupConverter(Converter):
             if groups is None:
                 raise CommandError(f"Group was unable to be found with name: {argument!s}")
             elif len(groups) == 1:
-                group_id = groups[0]
+                group_id = groups[0].id
             elif len(groups) < 11:
                 option_cog: Options = ctx.bot.cogs_lookup[Options.__class__.__name__]
                 option = Option(
@@ -52,7 +57,8 @@ class ChannelGroupConverter(Converter):
                     responders={ctx.author}
                 )
                 selected_option = await option_cog.ask_for_options(ctx, option)
-                group_id = groups[selected_option]
+                group_id = groups[selected_option].id
             else:
                 raise CommandError(f"To many groups found.")
-        return session.query(ChannelGroup).filter(ChannelGroup.id == group_id).first()
+        group = session.query(ChannelGroup).filter(ChannelGroup.id == group_id).first()
+        return group
