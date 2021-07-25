@@ -114,7 +114,8 @@ class ChannelManager(Cog):
     @command(name="register_channel", aliases=["rc"])
     @has_permissions(manage_guild=True)
     async def register_channel(self, ctx, channel: ChannelConverter, group: ChannelGroupConverter):
-        session.add(ChannelGroupChannel(channel_group_id=group.id, channel_id=channel.id))
+        group = ChannelGroupChannel(channel_group_id=group.id, channel_id=channel.id)
+        session.add(group)
         session.commit()
         embed = group_to_embed(group, "Channels Registered", ctx.author.colour)
         await ctx.send(embed=embed)
