@@ -10,11 +10,13 @@ from cogs.options import setup as setup_options
 from cogs.info import setup as setup_info
 from cogs.channel_manager import setup as channel_manager_setup
 from cogs.translate import setup as setup_translate
+from cogs.security import setup as setup_security
+
 from prefix import get_prefix
 
 
 VERSION = "0.0.1"
-COGS = [setup_core, setup_log, setup_options, setup_info, channel_manager_setup, setup_translate]
+COGS = [setup_core, setup_log, setup_options, setup_info, channel_manager_setup, setup_translate, setup_security]
 
 
 class Bot(BotBase):
