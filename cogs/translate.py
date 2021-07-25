@@ -1,52 +1,54 @@
 from typing import Optional
+from datetime import datetime
 
+from discord import Embed
 from discord.ext.commands import Cog, command
 
 import translators as ts
 
-from database import session, Channel
+from database import session
+
+from converters.ChannelConverter import ChannelConverter
+from converters.LanguageConverter import LanguageConverter
 
 from Language import Language
 
 
-language_codes = {
-    "en": Language.english,
-    "english": Language.english,
-    "es": Language.spanish,
-    "spanish": Language.spanish
-}
-
-
 def translate(message: str, language: Language):
-    lan_code = language.value
-    return ts.google(message, to_language=lan_code)
+    return ts.google(message, to_language=language.value)
 
 
 class Translate(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @command(name="set_channel_language")
-    async def set_channel_language(self, ctx, channel_id: Optional[int], language_code: str):
-        channel_id = channel_id or ctx.channel.id
-
-        channel = session.query(Channel).filter(Channel.id == channel_id).first()
-        if channel is None:
-            """The channel has not been initialized, so create it"""
-            session.add(Channel(id=channel_id, guild_id=ctx.guild.id))
-            channel = session.query(Channel).filter(Channel.id == channel_id).first()
-
-        channel.language = language_codes[language_code]
+    @command(name="set_channel_language", aliases=["scl"])
+    async def set_channel_language(
+            self,
+            ctx,
+            channel: ChannelConverter,
+            language: LanguageConverter
+    ):
+        channel.language = language
         session.commit()
 
         discord_channel = self.bot.get_channel(channel.id)
+        embed = Embed(
+            title=f"Updated Channel {discord_channel.name}",
+            description=f"Changed {discord_channel.name} language to {channel.language.value}",
+            colour=ctx.author.colour,
+            timestamp=datetime.utcnow()
+        )
 
-        await ctx.send(f"Updated channel {discord_channel.name} to have language {channel.language}")
+        await ctx.send(embed=embed)
 
     @command(name="translate")
-    async def translate(self, ctx, *, message: str):
-        language_code, message = message.split(' ', 1)
-        await ctx.send(translate(message, language_codes[language_code]))
+    async def translate(self, ctx, language: LanguageConverter, *, message: str):
+        embed = Embed(
+            colour=ctx.author.colour, description=translate(message, language), timestamp=datetime.utcnow()
+        )
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        await ctx.send(embed=embed)
 
     @Cog.listener()
     async def on_ready(self):
