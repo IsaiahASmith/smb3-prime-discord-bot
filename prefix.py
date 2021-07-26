@@ -3,6 +3,11 @@ from discord.ext.commands import when_mentioned_or
 from database import session, Guild
 
 
+def prefix(guild) -> str:
+    guild = session.query(Guild).filter(Guild.id == guild.id).first()
+    return guild.prefix
+
+
 def get_prefix(bot, message):
     guild = session.query(Guild).filter(Guild.id == message.guild.id).first()
 
