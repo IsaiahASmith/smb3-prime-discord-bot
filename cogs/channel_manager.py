@@ -124,12 +124,13 @@ class ChannelManager(Cog):
     @command(name="register_channel_from_token", aliases=["rcft"])
     @has_permissions(manage_guild=True)
     async def register_channel_from_token(self, ctx, channel: ChannelConverter, group_token: int, password: str):
-        security_cog: Security = self.bot.cogs_lookup[Security.__class__.__name__]
+        security_cog: Security = self.bot.cogs_lookup["security"]
         info = await security_cog.get_hole_info(group_token, ctx.author, password)
         if info is None:
-            ctx.send("Permission Denied")
-        group_id = info[0]
-        group = session.query(ChannelGroup).filter(ChannelGroup.id == group_id).first()  # Find the group
+            await ctx.send("Permission Denied")
+            return
+        group = info[0]
+        await security_cog.close_hole(group_token)  # Close the hole as it is useless now
         session.add(ChannelGroupChannel(channel_group_id=group.id, channel_id=channel.id))
         session.commit()
         embed = group_to_embed(self.bot, group, "Channels Registered", ctx.author.colour)
@@ -147,24 +148,28 @@ class ChannelManager(Cog):
         members = {member for member in members}
 
         token = None
+        dm_channel = None
 
         def check(message) -> bool:
-            if message.author == ctx.author and isinstance(message.channel, DMChannel):
+            if isinstance(message.channel, DMChannel):
                 nonlocal token
+                nonlocal dm_channel
                 token = message.content
-                message.channel.send(f"The password is: {token}")
+                dm_channel = message.channel
                 return True
             return False
 
         try:
-            await self.bot.wait_for('on_message', timeout=60.0, check=check)
+            await ctx.channel.send("DM me your password")
+            await self.bot.wait_for('message', timeout=60.0, check=check)
         except AsyncTimeoutError:
             await ctx.channel.send("Timeout")
             return None
 
+        await dm_channel.send(f"The password is: {token}")
         security_cog: Security = self.bot.cogs_lookup["security"]
-        hole_id = await security_cog.open_hole(members, "token", group)
-        ctx.send(f"The group token is {hole_id!s}")
+        hole_id = await security_cog.open_hole(members, token, group)
+        await ctx.send(f"The group token is {hole_id!s}")
 
         await sleep(duration)
         await security_cog.close_hole(hole_id)
@@ -193,7 +198,7 @@ class ChannelManager(Cog):
 
     @Cog.listener()
     async def on_message(self, message):
-        if not message.author.bot and not message.content.startswith(prefix(message.guild)):
+        if not message.author.bot and isinstance(message.channel, TextChannel) and not message.content.startswith(prefix(message.guild)):
             def embed_creator(language: Optional[Language]) -> Embed:
                 if language is None:
                     embed = Embed(

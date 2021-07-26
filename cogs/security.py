@@ -21,7 +21,7 @@ class Security(Cog):
     async def open_hole(self, members: Set[Member], password: str, *args) -> int:
         """Provides an id to check against"""
         cur_id = self._id_count
-        self._pending_holes.update({cur_id: (members, password, *args)})
+        self._pending_holes.update({cur_id: (members, generate_password(password), *args)})
         self._id_count += 1
         return cur_id
 
