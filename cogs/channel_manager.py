@@ -1,5 +1,6 @@
 from typing import List, Set, Optional, Callable
 from asyncio import sleep
+from asyncio import TimeoutError as AsyncTimeoutError
 from datetime import datetime
 
 from discord import Embed, Colour, TextChannel, Member, DMChannel
@@ -157,7 +158,7 @@ class ChannelManager(Cog):
 
         try:
             await self.bot.wait_for('on_message', timeout=60.0, check=check)
-        except TimeoutError:
+        except AsyncTimeoutError:
             await ctx.channel.send("Timeout")
             return None
 
