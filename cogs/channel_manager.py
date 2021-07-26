@@ -162,7 +162,7 @@ class ChannelManager(Cog):
             await ctx.channel.send("Timeout")
             return None
 
-        security_cog: Security = self.bot.cogs_lookup[Security.__class__.__name__]
+        security_cog: Security = self.bot.cogs_lookup["security"]
         hole_id = await security_cog.open_hole(members, "token", group)
         ctx.send(f"The group token is {hole_id!s}")
 

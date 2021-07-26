@@ -16,7 +16,15 @@ from prefix import get_prefix
 
 
 VERSION = "0.0.1"
-COGS = [setup_core, setup_log, setup_options, setup_info, channel_manager_setup, setup_translate, setup_security]
+COGS = [
+    (setup_core, "core"),
+    (setup_log, "log"),
+    (setup_options, "options"),
+    (setup_info, "info"),
+    (channel_manager_setup, "channel_manager"),
+    (setup_translate, "translate"),
+    (setup_security, "security")
+]
 
 
 class Bot(BotBase):
@@ -35,9 +43,9 @@ class Bot(BotBase):
         )
 
     def setup(self):
-        for cog in COGS:
+        for (cog, name) in COGS:
             c = cog(self)
-            self.cogs_lookup.update({c.__class__.__name__: c})
+            self.cogs_lookup.update({name: c})
 
     def run(self, version):
         self.version = version

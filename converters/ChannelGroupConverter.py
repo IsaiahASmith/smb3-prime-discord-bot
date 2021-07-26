@@ -45,7 +45,7 @@ class ChannelGroupConverter(Converter):
             elif len(groups) == 1:
                 group_id = groups[0].id
             elif len(groups) < 11:
-                option_cog: Options = ctx.bot.cogs_lookup[Options.__class__.__name__]
+                option_cog: Options = ctx.bot.cogs_lookup["options"]
                 option = Option(
                     question="Select the channel group desired.",
                     description="React with the corresponding emoji",
