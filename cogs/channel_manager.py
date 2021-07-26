@@ -1,14 +1,16 @@
 from typing import List, Set, Optional, Callable
+from asyncio import sleep
 from datetime import datetime
 
-from discord import Embed, Colour, TextChannel
-from discord.ext.commands import Cog, command, has_permissions
+from discord import Embed, Colour, TextChannel, Member, DMChannel
+from discord.ext.commands import Cog, command, has_permissions, Greedy
 
 from converters.ChannelConverter import ChannelConverter
 from converters.ChannelGroupConverter import ChannelGroupConverter
 from database import session, Channel, ChannelGroup, ChannelGroupChannel
 
 from cogs.translate import translate
+from cogs.security import Security
 
 from Language import Language
 from Field import Field
@@ -117,6 +119,54 @@ class ChannelManager(Cog):
         session.delete(group)
         session.commit()
         await ctx.send(embed=embed)
+
+    @command(name="register_channel_from_token", aliases=["rcft"])
+    @has_permissions(manage_guild=True)
+    async def register_channel_from_token(self, ctx, channel: ChannelConverter, group_token: int, password: str):
+        security_cog: Security = self.bot.cogs_lookup[Security.__class__.__name__]
+        info = await security_cog.get_hole_info(group_token, ctx.author, password)
+        if info is None:
+            ctx.send("Permission Denied")
+        group_id = info[0]
+        group = session.query(ChannelGroup).filter(ChannelGroup.id == group_id).first()  # Find the group
+        session.add(ChannelGroupChannel(channel_group_id=group.id, channel_id=channel.id))
+        session.commit()
+        embed = group_to_embed(self.bot, group, "Channels Registered", ctx.author.colour)
+        await ctx.send(embed=embed)
+
+    @command(name="generate_access_token", aliases=["gat"])
+    @has_permissions(manage_guild=True)
+    async def generate_access_token(
+            self,
+            ctx,
+            group: ChannelGroupConverter,
+            members: Greedy[Member],
+            duration: Optional[int] = 60.0
+    ):
+        members = {member for member in members}
+
+        token = None
+
+        def check(message) -> bool:
+            if message.author == ctx.author and isinstance(message.channel, DMChannel):
+                nonlocal token
+                token = message.content
+                message.channel.send(f"The password is: {token}")
+                return True
+            return False
+
+        try:
+            await self.bot.wait_for('on_message', timeout=60.0, check=check)
+        except TimeoutError:
+            await ctx.channel.send("Timeout")
+            return None
+
+        security_cog: Security = self.bot.cogs_lookup[Security.__class__.__name__]
+        hole_id = await security_cog.open_hole(members, "token", group)
+        ctx.send(f"The group token is {hole_id!s}")
+
+        await sleep(duration)
+        await security_cog.close_hole(hole_id)
 
     @command(name="register_channel", aliases=["rc"])
     @has_permissions(manage_guild=True)
