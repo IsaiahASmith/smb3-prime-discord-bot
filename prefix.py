@@ -1,3 +1,4 @@
+from discord import DMChannel
 from discord.ext.commands import when_mentioned_or
 
 from database import session, Guild
@@ -9,6 +10,9 @@ def prefix(guild) -> str:
 
 
 def get_prefix(bot, message):
+    if isinstance(message.channel, DMChannel):
+        return when_mentioned_or("+")(bot, message)
+
     guild = session.query(Guild).filter(Guild.id == message.guild.id).first()
 
     try:
