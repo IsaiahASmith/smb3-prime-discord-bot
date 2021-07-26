@@ -135,4 +135,6 @@ class Log(Cog):
 
 
 def setup(bot):
-    bot.add_cog(Log(bot))
+    cog = Log(bot)
+    bot.add_cog(cog)
+    return cog

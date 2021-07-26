@@ -46,4 +46,6 @@ class Security(Cog):
 
 
 def setup(bot):
-    bot.add_cog(Security(bot))
+    cog = Security(bot)
+    bot.add_cog(cog)
+    return cog

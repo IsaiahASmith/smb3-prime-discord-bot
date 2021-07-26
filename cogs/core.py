@@ -27,4 +27,6 @@ class Core(Cog):
 
 
 def setup(bot):
-    bot.add_cog(Core(bot))
+    cog = Core(bot)
+    bot.add_cog(cog)
+    return cog

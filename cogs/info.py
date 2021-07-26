@@ -79,4 +79,6 @@ class Info(Cog):
 
 
 def setup(bot):
-    bot.add_cog(Info(bot))
+    cog = Info(bot)
+    bot.add_cog(cog)
+    return cog

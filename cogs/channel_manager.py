@@ -229,4 +229,6 @@ class ChannelManager(Cog):
 
 
 def setup(bot):
-    bot.add_cog(ChannelManager(bot))
+    cog = ChannelManager(bot)
+    bot.add_cog(cog)
+    return cog

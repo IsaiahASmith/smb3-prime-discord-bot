@@ -45,4 +45,6 @@ class Options(Cog):
 
 
 def setup(bot):
-    bot.add_cog(Options(bot))
+    cog = Options(bot)
+    bot.add_cog(cog)
+    return cog

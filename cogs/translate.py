@@ -52,4 +52,6 @@ class Translate(Cog):
 
 
 def setup(bot):
-    bot.add_cog(Translate(bot))
+    cog = Translate(bot)
+    bot.add_cog(cog)
+    return cog
