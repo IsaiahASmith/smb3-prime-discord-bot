@@ -6,6 +6,7 @@ from discord.ext.commands import Bot as BotBase
 
 from cogs.core import setup as setup_core
 from cogs.log import setup as setup_log
+from cogs.sender import setup as setup_sender
 from cogs.options import setup as setup_options
 from cogs.info import setup as setup_info
 from cogs.channel_manager import setup as channel_manager_setup
@@ -19,6 +20,7 @@ VERSION = "0.0.1"
 COGS = [
     (setup_core, "core"),
     (setup_log, "log"),
+    (setup_sender, "sender"),
     (setup_options, "options"),
     (setup_info, "info"),
     (channel_manager_setup, "channel_manager"),
@@ -74,6 +76,10 @@ class Bot(BotBase):
 if __name__ == "__main__":
     #from keep_alive import keep_alive
     #keep_alive()  # Runs a random server so the bot doesn't go to sleep.
+
+    # Download some random thing nltk needs
+    import nltk
+    nltk.download('punkt')
 
     print("making bot")
     bot = Bot()

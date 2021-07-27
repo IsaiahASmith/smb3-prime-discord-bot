@@ -1,4 +1,4 @@
-from typing import List, Set, Optional, Callable
+from typing import List, Set, Optional
 from asyncio import sleep
 from asyncio import TimeoutError as AsyncTimeoutError
 from datetime import datetime
@@ -10,10 +10,10 @@ from converters.ChannelConverter import ChannelConverter
 from converters.ChannelGroupConverter import ChannelGroupConverter
 from database import session, Channel, ChannelGroup, ChannelGroupChannel
 
-from cogs.translate import translate
 from cogs.security import Security
 
-from Language import Language
+from Message.MessageCreator import MessageCopyCreator
+
 from Field import Field
 
 from prefix import prefix
@@ -199,38 +199,13 @@ class ChannelManager(Cog):
     @Cog.listener()
     async def on_message(self, message):
         if not message.author.bot and isinstance(message.channel, TextChannel) and not message.content.startswith(prefix(message.guild)):
-            def embed_creator(language: Optional[Language]) -> Embed:
-                if language is None:
-                    embed = Embed(
-                        colour=message.author.colour,
-                        description=message.content,
-                        timestamp=datetime.utcnow(),
-                    )
-                else:
-                    translation = translate(message.content, language)
-                    embed = Embed(
-                        colour=message.author.colour, description=translation, timestamp=datetime.utcnow()
-                    )
+            sender_cog = self.bot.cogs_lookup["sender"]
 
-                embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
-                return embed
-
-            await self.send_once(get_groups_from_channel(message.channel), embed_creator, {message.channel.id})
-
-    async def send_once(
-            self,
-            channel_groups: Set[ChannelGroup],
-            embed_creator: Callable[[Optional[Language]], Embed],
-            sent: Optional[Set[int]] = None
-    ):
-        """Sends a message to every channel in channel groups only once"""
-        sent_channels = sent or set()
-        for channel_group in channel_groups:
-            for channel in channel_group.channels:
-                if channel.id not in sent_channels:
-                    discord_channel = self.bot.get_channel(channel.id)
-                    await discord_channel.send(embed=embed_creator(channel.language))
-                    sent_channels.add(channel.id)
+            await sender_cog.send_once(
+                get_groups_from_channel(message.channel),
+                MessageCopyCreator(message),
+                {message.channel.id}
+            )
 
 
 def setup(bot):

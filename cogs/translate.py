@@ -14,9 +14,15 @@ from converters.LanguageConverter import LanguageConverter
 from Language import Language
 
 
-def translate(message: str, language: Language):
-    return ts.google(message, to_language=language.value)
-
+def translate(message: Optional[str], language: Language, from_language: Optional[Language] = None):
+    if message is None:
+        return
+    if not language:
+        return message
+    if not from_language:
+        return ts.google(message, to_language=language.value)
+    return ts.google(message, to_language=language.value, from_language=from_language.value)
+        
 
 class Translate(Cog):
     def __init__(self, bot):
