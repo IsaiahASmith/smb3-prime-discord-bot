@@ -10,7 +10,7 @@ class ChannelConverter(TextChannelConverter):
         sql_channel = session.query(Channel).filter(Channel.id == channel.id).first()
         if sql_channel is None:
             """The channel has not been initialized, so create it"""
-            sql_channel = Channel(id=channel.id, guild_id=ctx.guild.id)
+            sql_channel = Channel(id=channel.id, name=channel.name, guild_id=ctx.guild.id)
             session.add(sql_channel)
             session.commit()
         return sql_channel

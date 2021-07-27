@@ -14,6 +14,7 @@ session = Session()
 class Channel(Base):
     __tablename__ = "channels"
     id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String, nullable=False)
     guild_id = Column(Integer, ForeignKey("guilds.id"), nullable=False)
     language = Column(Enum(Language), nullable=True)
 
@@ -30,7 +31,7 @@ class ChannelGroup(Base):
     guild_id = Column(Integer, ForeignKey("guilds.id"), nullable=False)
     name = Column(String)
 
-    channels = relationship("Channel", secondary="channel_group_channels", cascade="all, delete")
+    channels = relationship("Channel", backref="groups", secondary="channel_group_channels", cascade="all, delete")
 
 
 class Guild(Base):
