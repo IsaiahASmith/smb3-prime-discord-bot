@@ -186,13 +186,7 @@ class ChannelManager(Cog):
     @command(name="unregister_channel", aliases=["urc"])
     @has_permissions(manage_guild=True)
     async def unregister_channel(self, ctx, channel: ChannelConverter, group: ChannelGroupConverter):
-        channel_group_channel = (
-            session.query(ChannelGroupChannel)
-                .filter(
-                (ChannelGroupChannel.channel_group_id == group.id) & (ChannelGroupChannel.channel_id == channel.id))
-                .first()
-        )
-        session.delete(channel_group_channel)
+        group.channels.remove(channel)
         session.commit()
         embed = group_to_embed(self.bot, group, "Channels Registered", ctx.author.colour)
         await ctx.send(embed=embed)
