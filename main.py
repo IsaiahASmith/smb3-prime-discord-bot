@@ -1,7 +1,7 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from os import environ
 
-from discord import Intents
+from discord import Intents, TextChannel
 from discord.ext.commands import Bot as BotBase
 
 from cogs.core import setup as setup_core
@@ -13,7 +13,7 @@ from cogs.channel_manager import setup as channel_manager_setup
 from cogs.translate import setup as setup_translate
 from cogs.security import setup as setup_security
 
-from prefix import get_prefix
+from prefix import get_prefix, prefix
 
 
 VERSION = "0.0.1"
@@ -70,7 +70,14 @@ class Bot(BotBase):
 
     async def on_message(self, message):
         if not message.author.bot:
-            await self.process_commands(message)        
+            await self.process_commands(message)
+
+        if message.author.bot or message.content.startswith(prefix(message.guild)):
+            return
+
+        if isinstance(message.channel, TextChannel):
+            # This message is part of a conversation from the members
+            self.dispatch("on_conversation", message)
 
 
 if __name__ == "__main__":

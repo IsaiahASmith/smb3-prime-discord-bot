@@ -14,6 +14,7 @@ from cogs.security import Security
 
 from Message.MessageCreator import MessageCopyCreator
 
+from ChannelAdapter import ChannelAdapter
 from Field import Field
 
 from prefix import prefix
@@ -197,15 +198,14 @@ class ChannelManager(Cog):
         await ctx.send(embed=embed)
 
     @Cog.listener()
-    async def on_message(self, message):
-        if not message.author.bot and isinstance(message.channel, TextChannel) and not message.content.startswith(prefix(message.guild)):
-            sender_cog = self.bot.cogs_lookup["sender"]
+    async def on_conversation(self, message):
+        sender_cog = self.bot.cogs_lookup["sender"]
 
-            await sender_cog.send_once(
-                get_groups_from_channel(message.channel),
-                MessageCopyCreator(message),
-                {message.channel.id}
-            )
+        await sender_cog.send_once(
+            ChannelAdapter.from_discord_channel(message.channel).groups,
+            MessageCopyCreator(message),
+            {message.channel.id}
+        )
 
 
 def setup(bot):
