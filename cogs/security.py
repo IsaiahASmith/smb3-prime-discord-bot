@@ -1,14 +1,16 @@
-from typing import Set
+from typing import Optional, Dict
+from asyncio import TimeoutError as AsyncTimeoutError
 
-from discord import Member
-from discord.ext.commands import Cog
+from discord import Member, DMChannel, Message
+from discord.ext.commands import Cog, command, has_permissions, Greedy
 
-from bcrypt import hashpw, gensalt, checkpw
+from Permissions import Hole, TokenInvalidatedException
+from converters.PermissionConverter import PermissionConverter
 
 
-def generate_password(password: str) -> bytes:
-    """Provides a salted hash from a password"""
-    return hashpw(password.encode("utf-8"), gensalt())
+class PasswordTimeout(Exception):
+    def __init__(self, message="Failed to create a password before timeout"):
+        super().__init__(message)
 
 
 class Security(Cog):
@@ -16,33 +18,65 @@ class Security(Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self._pending_holes = {}
+        self._pending_holes: Dict[int, Hole] = {}
 
-    async def open_hole(self, members: Set[Member], password: str, *args) -> int:
+    def open_hole(self, hole: Hole, duration: int) -> int:
         """Provides an id to check against"""
-        cur_id = self._id_count
-        self._pending_holes.update({cur_id: (members, generate_password(password), *args)})
+        hole_id = self._id_count
+        self._pending_holes.update({self._id_count: hole})
+        self.bot.scheduler.add_job(lambda hid=hole_id, *_: self.close_hole(hid), seconds=duration)
         self._id_count += 1
-        return cur_id
+        return hole_id
 
-    async def close_hole(self, hole_id: int):
+    def close_hole(self, hole_id: int):
         """Removes a hole the check against"""
         del self._pending_holes[hole_id]
 
-    async def get_hole_info(self, hole_id: int, member: Member, password: str):
-        if await self.check_hole(hole_id, member, password):
-            return list(self._pending_holes[hole_id])[2:]  # Remove the members and password from the hole
-
-    async def check_hole(self, hole_id: int, member: Member, password: str) -> bool:
-        """Allows processing through a hole with a valid hole, member, and password"""
+    def get_token_content(self, hole_id: int, member: Optional[Member] = None, password: Optional[str] = None):
+        """Gets the content of a hole"""
         if hole_id not in self._pending_holes:
-            return False
+            raise TokenInvalidatedException(None, "Invalid Token - None found")
 
-        hole = self._pending_holes[hole_id]
-        if member not in hole[0]:
-            return False
+        return self._pending_holes[hole_id].get_content(member, password)
 
-        return checkpw(password.encode("utf-8"), hole[1])
+    async def generate_token_password(self, ctx, author: Optional[Member] = None) -> str:
+        """Asks the member for a password"""
+        if author is None:
+            author = ctx.author
+
+        password = ""
+
+        def check(message: Message) -> bool:
+            if not isinstance(message.channel, DMChannel) or author != message.author:
+                return False
+            nonlocal password
+            password = message.content
+            await message.channel.send(f"The password is: {password}")
+            return True
+
+        await ctx.channel.send("DM me your password")
+        try:
+            await self.bot.wait_for('message', timeout=60.0, check=check)
+        except AsyncTimeoutError:
+            await ctx.channel.send("Timeout")
+            raise PasswordTimeout()
+        return password
+
+    @command(name="generate_token", aliases=["gt"])
+    @has_permissions(manage_guild=True)
+    async def generate_token(
+            self,
+            ctx,
+            permissions: PermissionConverter,
+            members: Optional[Greedy[Member]],
+            uses: int = 1,
+            duration: int = 60.0
+    ):
+        if members is not None:
+            members = set(members)
+        password = None if members is not None else await self.generate_token_password(ctx)
+        hole = Hole.from_password(permissions, uses, members, password)
+        return self.open_hole(hole, duration)
 
 
 def setup(bot):
