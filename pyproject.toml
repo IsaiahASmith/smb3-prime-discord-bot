@@ -2,7 +2,7 @@
 name = "repl_python3_Prime-Bot"
 version = "0.1.0"
 description = ""
-authors = ["TheJoeSmo <<>>"]
+authors = ["TheJoeSmo <joesmo.joesmo12@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
