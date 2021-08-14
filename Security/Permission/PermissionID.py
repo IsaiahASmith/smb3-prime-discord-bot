@@ -3,7 +3,7 @@ from enum import Enum, auto
 
 class PermissionID(Enum):
     """All the possible permissions that are possible to provide"""
-    # Guild Wide Permissions
+    # Guild Wide Permission
     ADMINISTRATOR = auto()
     MANAGE_EMOJIS = auto()
     VIEW_AUDIT_LOG = auto()
@@ -15,12 +15,12 @@ class PermissionID(Enum):
     BAN_MEMBERS = auto()
     CREATE_INSTANT_INVITE = auto()
 
-    # Channel Permissions
+    # Channel Permission
     MANAGE_PERMISSIONS = auto()
     MANAGE_WEBHOOKS = auto()
     VIEW_CHANNEL = auto()
 
-    # Text Channel Permissions
+    # Text Channel Permission
     MANAGE_MESSAGES = auto()
     MENTION_EVERYONE = auto()
     READ_MESSAGE_HISTORY = auto()
@@ -34,7 +34,7 @@ class PermissionID(Enum):
     USE_SLASH_COMMANDS = auto()
     REQUEST_TO_SPEAK = auto()
 
-    # Voice Channel Permissions
+    # Voice Channel Permission
     CONNECT = auto()
     SPEAK = auto()
     MUTE_MEMBERS = auto()
@@ -44,6 +44,6 @@ class PermissionID(Enum):
     PRIORITY_SPEAKER = auto()
     STREAM = auto()
 
-    # Channel Manager Permissions
+    # Channel Manager Permission
     MANAGE_CHANNEL_GROUPS = auto()
     MANAGE_CHANNEL = auto()

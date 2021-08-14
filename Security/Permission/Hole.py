@@ -4,9 +4,9 @@ from typing import Set, Optional, Any
 from bcrypt import checkpw, hashpw, gensalt
 from discord import Member
 
-from Permissions import Permission
-from Permissions.TokenInvalidatedException import TokenInvalidatedException
-from Permissions.AccessDeniedException import AccessDeniedException
+from Security.Permission import Permission
+from Security.Permission.TokenInvalidatedException import TokenInvalidatedException
+from Security.Permission.AccessDeniedException import AccessDeniedException
 
 
 @dataclass
@@ -58,6 +58,6 @@ class Hole:
         self.validate(member, password)
         return self.content
 
-    def use(self, permission: Permission, member: Optional[Member] = None, password: Optional[str] = None) -> bool:
+    def use(self, member: Optional[Member] = None, password: Optional[str] = None) -> bool:
         """Determines if a user can use a certain permission"""
         self.validate(member, password)

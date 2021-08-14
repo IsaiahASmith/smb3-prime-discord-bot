@@ -1,11 +1,17 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, Set
 from asyncio import TimeoutError as AsyncTimeoutError
+from functools import partialmethod
 
-from discord import Member, DMChannel, Message
-from discord.ext.commands import Cog, command, has_permissions, Greedy
+from discord import Member, Message, TextChannel, Guild
+from discord.ext.commands import Cog, command, has_permissions, Greedy, Context, MissingPermissions, check
 
-from Permissions import Hole, TokenInvalidatedException
-from converters.PermissionConverter import PermissionConverter
+from Security.Permission import Permission, Hole, TokenInvalidatedException
+from converters.PermissionConverter import PermissionConverter as PermConverter
+
+
+def validate(a, b) -> bool:
+    """Determines if a class is valid against another"""
+    return a.__validate__(b)
 
 
 class PasswordTimeout(Exception):
@@ -19,6 +25,45 @@ class Security(Cog):
     def __init__(self, bot):
         self.bot = bot
         self._pending_holes: Dict[int, Hole] = {}
+
+    def get_holes(
+            self,
+            member: Optional[Member] = None,
+            channel: Optional[TextChannel] = None,
+            guild: Optional[Guild] = None
+    ) -> Set[Hole]:
+        """Fines a hole with a given set of information"""
+        holes = set()
+        for hole in self._pending_holes.values():
+            if member is not None and member not in hole.members:
+                continue
+            if channel is not None and channel != hole.permissions.channel:
+                continue
+            if guild is not None and guild != hole.permissions.guild:
+                continue
+            holes.add(hole)
+        return holes
+
+    def validate_permissions(self, permission: Permission, ctx: Context):
+        """Determines if a user has permissions from a context"""
+        user_perms = Permission.from_discord_permissions(
+            guild=ctx.guild, channel=ctx.channel, permissions=ctx.channel.permissions_for(ctx.author)
+        )
+
+        if validate(permission, user_perms):
+            return True
+
+        holes = self.get_holes(ctx.author, ctx.channel, ctx.guild)
+        temp_perms = sum(hole.permissions for hole in holes)
+        if validate(permission, user_perms + temp_perms):
+            for hole in holes:
+                hole.use(ctx.author)
+            return True
+        raise MissingPermissions([])
+
+    def has_permission(self, permission: Permission):
+        """Returns a check that validates if a user has a series of permissions"""
+        return check(partialmethod(self.validate_permissions, permission))
 
     def open_hole(self, hole: Hole, duration: int) -> int:
         """Provides an id to check against"""
@@ -39,38 +84,32 @@ class Security(Cog):
 
         return self._pending_holes[hole_id].get_content(member, password)
 
-    async def generate_token_password(self, ctx, author: Optional[Member] = None) -> str:
-        """Asks the member for a password"""
-        if author is None:
-            author = ctx.author
-
-        password = ""
-
-        def check(message: Message) -> bool:
-            if not isinstance(message.channel, DMChannel) or author != message.author:
+    async def ask_user_for_password(self, author: Member, channel: TextChannel, password: str = ""):
+        """Asks the user for a password"""
+        def password_check(message: Message) -> bool:
+            if author != message.author:
                 return False
             nonlocal password
             password = message.content
             await message.channel.send(f"The password is: {password}")
             return True
 
-        await ctx.channel.send("DM me your password")
+        await channel.send("DM me your password")
         try:
-            await self.bot.wait_for('message', timeout=60.0, check=check)
+            await self.bot.wait_for('direct_message', timeout=60.0, check=password_check)
         except AsyncTimeoutError:
-            await ctx.channel.send("Timeout")
+            await channel.send("Timeout")
             raise PasswordTimeout()
-        return password
+
+    async def generate_token_password(self, ctx: Context, author: Optional[Member] = None) -> str:
+        """Asks the member for a password"""
+        author = ctx.author if author is None else author
+        return await self.ask_user_for_password(author, ctx.channel)
 
     @command(name="generate_token", aliases=["gt"])
     @has_permissions(manage_guild=True)
     async def generate_token(
-            self,
-            ctx,
-            permissions: PermissionConverter,
-            members: Optional[Greedy[Member]],
-            uses: int = 1,
-            duration: int = 60.0
+        self, ctx, permissions: PermConverter, members: Optional[Greedy[Member]], uses: int = 1, duration: int = 60.0
     ):
         if members is not None:
             members = set(members)

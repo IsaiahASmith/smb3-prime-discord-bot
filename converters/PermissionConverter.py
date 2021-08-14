@@ -2,7 +2,7 @@ from typing import Optional
 
 from discord.ext.commands import Converter, Context
 
-from Permissions import Permission, PermissionID
+from Security.Permission import Permission, PermissionID
 
 _permission_codes = {
     "cg": PermissionID.CHANNEL_GROUPS,

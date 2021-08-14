@@ -1,7 +1,7 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from os import environ
 
-from discord import Intents, TextChannel
+from discord import Intents, TextChannel, DMChannel
 from discord.ext.commands import Bot as BotBase
 
 from cogs import COGS
@@ -55,6 +55,10 @@ class Bot(BotBase):
         if isinstance(message.channel, TextChannel):
             # This message is part of a conversation from the members
             self.dispatch("on_conversation", message)
+
+        if isinstance(message.channel, DMChannel):
+            # This message is part of a dm with the bot
+            self.dispatch("on_direct_message", message)
 
 
 if __name__ == "__main__":

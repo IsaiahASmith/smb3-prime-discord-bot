@@ -2,7 +2,7 @@
 from .AccessDeniedException import AccessDeniedException
 from .TokenInvalidatedException import TokenInvalidatedException
 
-# Permissions
+# Permission
 from .PermissionID import PermissionID
 from .Permission import Permission
 
