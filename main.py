@@ -20,11 +20,7 @@ class Bot(BotBase):
         self.guild = None
         self.scheduler = AsyncIOScheduler()
 
-        super().__init__(
-            command_prefix=get_prefix, 
-            owner_id=environ['TOKEN'],
-            intents=Intents.all()
-        )
+        super().__init__(command_prefix=get_prefix, owner_id=environ["TOKEN"], intents=Intents.all())
 
     def setup(self):
         print("running setup")
@@ -37,13 +33,13 @@ class Bot(BotBase):
         self.setup()
 
         print("running bot")
-        super().run(environ['TOKEN'], reconnect=True)
+        super().run(environ["TOKEN"], reconnect=True)
 
     async def on_connect(self):
-        print(f"We have logged in")
+        print("We have logged in")
 
     async def on_disconnect(self):
-        print(f"We have logged out")
+        print("We have logged out")
 
     async def on_message(self, message):
         if not message.author.bot:
@@ -64,7 +60,8 @@ class Bot(BotBase):
 if __name__ == "__main__":
     # Download some random thing nltk needs
     import nltk
-    nltk.download('punkt')
+
+    nltk.download("punkt")
 
     print("making bot")
     bot = Bot()
