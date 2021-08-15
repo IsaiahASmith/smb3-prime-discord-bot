@@ -16,16 +16,9 @@ class Log(Cog):
         """A member changed their part of the profile"""
 
         if before.discriminator != after.discriminator:
-            embed = Embed(
-                title="Discriminator Change",
-                colour=after.colour,
-                timestamp=datetime.utcnow()
-            )
+            embed = Embed(title="Discriminator Change", colour=after.colour, timestamp=datetime.utcnow())
 
-            fields = [
-                ("Before", before.discriminator, False),
-                ("After", after.discriminator, False)
-            ]
+            fields = [("Before", before.discriminator, False), ("After", after.discriminator, False)]
 
             for name, value, inline in fields:
                 embed.add_field(name=name, value=value, inline=inline)
@@ -38,11 +31,7 @@ class Log(Cog):
             await self.bot.get_channel(_channel_id).send(embed=embed)
 
         if before.avatar_url != after.avatar_url:
-            embed = Embed(
-                title="Avatar Change",
-                colour=after.colour,
-                timestamp=datetime.utcnow()
-            )
+            embed = Embed(title="Avatar Change", colour=after.colour, timestamp=datetime.utcnow())
 
             embed.set_thumbnail(url=before.avatar_url)
             embed.set_image(url=after.avatar_url)
@@ -54,16 +43,9 @@ class Log(Cog):
         """A member changed their nickname"""
 
         if before.display_name != after.display_name:
-            embed = Embed(
-                title="Nickname Change",
-                colour=after.colour,
-                timestamp=datetime.utcnow()
-            )
+            embed = Embed(title="Nickname Change", colour=after.colour, timestamp=datetime.utcnow())
 
-            fields = [
-                ("Before", before.display_name, False),
-                ("After", after.display_name, False)
-            ]
+            fields = [("Before", before.display_name, False), ("After", after.display_name, False)]
 
             for name, value, inline in fields:
                 embed.add_field(name=name, value=value, inline=inline)
@@ -72,15 +54,11 @@ class Log(Cog):
             await self.bot.get_channel(_channel_id).send(embed=embed)
 
         if before.roles != after.roles:
-            embed = Embed(
-                title="Roles Change",
-                colour=after.colour,
-                timestamp=datetime.utcnow()
-            )
+            embed = Embed(title="Roles Change", colour=after.colour, timestamp=datetime.utcnow())
 
             fields = [
                 ("Before", ", ".join([r.mention for r in before.roles]), False),
-                ("After", ", ".join([r.mention for r in after.roles]), False)
+                ("After", ", ".join([r.mention for r in after.roles]), False),
             ]
 
             for name, value, inline in fields:
@@ -89,29 +67,24 @@ class Log(Cog):
             embed.set_thumbnail(url=after.avatar_url)
             await self.bot.get_channel(_channel_id).send(embed=embed)
 
-
     @Cog.listener()
     async def on_message_edit(self, before, after):
-       if not after.author.bot:
+        if not after.author.bot:
             if before.content != after.content:
                 embed = Embed(
                     title="Message Edit",
                     description=f"Edit by {after.author.display_name}",
                     colour=after.author.colour,
-                    timestamp=datetime.utcnow()
+                    timestamp=datetime.utcnow(),
                 )
 
-                fields = [
-                    ("Before", before.content, False),
-                    ("After", after.content, False)
-                ]
+                fields = [("Before", before.content, False), ("After", after.content, False)]
 
                 for name, value, inline in fields:
                     embed.add_field(name=name, value=value, inline=inline)
 
                 embed.set_thumbnail(url=after.author.avatar_url)
                 await self.bot.get_channel(_channel_id).send(embed=embed)
-
 
     @Cog.listener()
     async def on_message_delete(self, message):
@@ -120,12 +93,10 @@ class Log(Cog):
                 title="Message Deletion",
                 description=f"Action by {message.author.display_name}",
                 colour=message.author.colour,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.utcnow(),
             )
 
-            fields = [
-                ("Delete", message.content, False)
-            ]
+            fields = [("Delete", message.content, False)]
 
             for name, value, inline in fields:
                 embed.add_field(name=name, value=value, inline=inline)

@@ -26,16 +26,10 @@ def get_groups_by_guild(guild_id: int):
 
 
 def list_groups_to_embed(
-        groups: List[ChannelGroup],
-        title: str = "Channel Groups",
-        colour: Optional[Colour] = None
+    groups: List[ChannelGroup], title: str = "Channel Groups", colour: Optional[Colour] = None
 ) -> Embed:
     colour = colour or Colour.default()
-    embed = Embed(
-        title=title,
-        colour=colour,
-        timestamp=datetime.utcnow()
-    )
+    embed = Embed(title=title, colour=colour, timestamp=datetime.utcnow())
 
     fields = [Field(group.name, group.id, False) for group in groups]
     for field in fields:
@@ -47,35 +41,23 @@ def list_groups_to_embed(
 def get_group_channels(group: ChannelGroup) -> Set[Channel]:
     """Finds every channel a group contains"""
     return {
-        channel for channel in 
-        session.query(Channel).join(ChannelGroupChannel).filter(
-            ChannelGroupChannel.channel_group_id == group.id
-        )
+        channel
+        for channel in session.query(Channel)
+        .join(ChannelGroupChannel)
+        .filter(ChannelGroupChannel.channel_group_id == group.id)
     }
 
 
-def group_to_embed(
-        bot,
-        group: ChannelGroup,
-        title: str = "Channel Group",
-        colour: Optional[Colour] = None
-) -> Embed:
+def group_to_embed(bot, group: ChannelGroup, title: str = "Channel Group", colour: Optional[Colour] = None) -> Embed:
     """Provides an embed for a group"""
     colour = colour or Colour.default()
-    embed = Embed(
-        title=title,
-        colour=colour,
-        timestamp=datetime.utcnow()
-    )
+    embed = Embed(title=title, colour=colour, timestamp=datetime.utcnow())
 
     channels = get_group_channels(group)
 
     fields = [
         Field(f"Group: {group.name}", f"ID: {group.id}", False),
-        *[
-            Field(bot.get_channel(channel.id).name, channel.id, True) 
-            for channel in channels
-        ]
+        *[Field(bot.get_channel(channel.id).name, channel.id, True) for channel in channels],
     ]
 
     for field in fields:
@@ -87,10 +69,11 @@ def group_to_embed(
 def get_groups_from_channel(channel: TextChannel) -> Set[ChannelGroup]:
     """Finds every group a channel is associated with"""
     return {
-        group for group in
-        session.query(ChannelGroup).join(ChannelGroupChannel).join(Channel).filter(
-            channel.id == ChannelGroupChannel.channel_id
-        )
+        group
+        for group in session.query(ChannelGroup)
+        .join(ChannelGroupChannel)
+        .join(Channel)
+        .filter(channel.id == ChannelGroupChannel.channel_id)
     }
 
 
@@ -140,11 +123,7 @@ class ChannelManager(Cog):
     @command(name="generate_access_token", aliases=["gat"])
     @has_permissions(manage_guild=True)
     async def generate_access_token(
-            self,
-            ctx,
-            group: ChannelGroupConverter,
-            members: Greedy[Member],
-            duration: Optional[int] = 60.0
+        self, ctx, group: ChannelGroupConverter, members: Greedy[Member], duration: Optional[int] = 60.0
     ):
         members = {member for member in members}
 
@@ -162,7 +141,7 @@ class ChannelManager(Cog):
 
         try:
             await ctx.channel.send("DM me your password")
-            await self.bot.wait_for('message', timeout=60.0, check=check)
+            await self.bot.wait_for("message", timeout=60.0, check=check)
         except AsyncTimeoutError:
             await ctx.channel.send("Timeout")
             return None
@@ -198,7 +177,7 @@ class ChannelManager(Cog):
         await sender_cog.send_once(
             ChannelAdapter.from_discord_channel(message.channel).groups,
             MessageCopyCreator(message),
-            {message.channel.id}
+            {message.channel.id},
         )
 
 

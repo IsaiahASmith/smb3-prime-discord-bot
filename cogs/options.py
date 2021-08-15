@@ -36,7 +36,7 @@ class Options(Cog):
             return False
 
         try:
-            await self.bot.wait_for('raw_reaction_add', timeout=60.0, check=check)
+            await self.bot.wait_for("raw_reaction_add", timeout=60.0, check=check)
         except TimeoutError:
             del self.pending_options[option_id]
             await ctx.channel.send("Timeout")

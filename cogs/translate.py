@@ -22,19 +22,14 @@ def translate(message: Optional[str], language: Language, from_language: Optiona
     if not from_language:
         return ts.google(message, to_language=language.value)
     return ts.google(message, to_language=language.value, from_language=from_language.value)
-        
+
 
 class Translate(Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @command(name="set_channel_language", aliases=["scl"])
-    async def set_channel_language(
-            self,
-            ctx,
-            channel: ChannelConverter,
-            language: LanguageConverter
-    ):
+    async def set_channel_language(self, ctx, channel: ChannelConverter, language: LanguageConverter):
         channel.language = language
         session.commit()
 
@@ -43,16 +38,14 @@ class Translate(Cog):
             title=f"Updated Channel {discord_channel}",
             description=f"Changed {discord_channel} language to {channel.language.value}",
             colour=ctx.author.colour,
-            timestamp=datetime.utcnow()
+            timestamp=datetime.utcnow(),
         )
 
         await ctx.send(embed=embed)
 
     @command(name="translate")
     async def translate(self, ctx, language: LanguageConverter, *, message: str):
-        embed = Embed(
-            colour=ctx.author.colour, description=translate(message, language), timestamp=datetime.utcnow()
-        )
+        embed = Embed(colour=ctx.author.colour, description=translate(message, language), timestamp=datetime.utcnow())
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
         await ctx.send(embed=embed)
 

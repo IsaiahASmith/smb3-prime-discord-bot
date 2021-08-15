@@ -16,10 +16,7 @@ class Sender(Cog):
         await message_creator.post_message(client=self.bot, channel=channel)
 
     async def send_once(
-            self,
-            channel_groups: Set[ChannelGroup],
-            message_creator: MessageCopyCreator,
-            sent: Optional[Set[int]] = None
+        self, channel_groups: Set[ChannelGroup], message_creator: MessageCopyCreator, sent: Optional[Set[int]] = None
     ):
         """Sends a message to every channel in channel groups only once"""
         sent_channels = sent or set()

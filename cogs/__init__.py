@@ -15,5 +15,5 @@ COGS = [
     (setup_info, "info"),
     (channel_manager_setup, "channel_manager"),
     (setup_translate, "translate"),
-    (setup_security, "security")
+    (setup_security, "security"),
 ]
