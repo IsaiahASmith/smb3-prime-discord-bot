@@ -6,6 +6,7 @@ from Message.Embeds.Embed import Embed
 
 class BaseEmbed(Embed, ABC):
     """An embed with a title and description"""
+
     def __init__(self, title: str, description: str, *args, **kwargs):
         self._title = title
         self._description = description

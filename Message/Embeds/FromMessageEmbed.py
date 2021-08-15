@@ -16,9 +16,7 @@ def has_an_image(attachments: List[Attachment], index: int = 0) -> bool:
 
 
 def get_embed_from_message(
-        title: Optional[str] = None,
-        attachments: Optional[List[Attachment]] = None,
-        **kwargs
+    title: Optional[str] = None, attachments: Optional[List[Attachment]] = None, **kwargs
 ) -> Union[TextEmbed, ImageTextEmbed, ThumbnailTextEmbed]:
     """Creates an embed for something a Member said"""
     if attachments is None or not len(attachments) or not has_an_image(attachments):

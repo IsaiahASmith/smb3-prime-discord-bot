@@ -17,6 +17,7 @@ from Message.Embeds.Footer import Footer
 
 class Embed(ABC):
     """A interface to create an Embed"""
+
     def __init__(self, *args, **kwargs):
         """Accepts multiple arguments to help with inheritance"""
 
@@ -82,7 +83,7 @@ class Embed(ABC):
             "title": translate(self.title, self.language, self.current_language),
             "description": translate(self.description, self.language, self.current_language),
             "colour": self.colour,
-            "timestamp": self.timestamp
+            "timestamp": self.timestamp,
         }
 
         kwargs_to_del = []
@@ -102,7 +103,7 @@ class Embed(ABC):
         if self.footer is not None:
             kwargs = {
                 "text": translate(self.footer.text, self.language, self.current_language),
-                "icon_url": self.footer.icon_url
+                "icon_url": self.footer.icon_url,
             }
             embed.set_footer(**kwargs)
 

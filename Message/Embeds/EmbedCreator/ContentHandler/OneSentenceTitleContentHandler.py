@@ -18,7 +18,7 @@ class OneSentenceTitleContentHandler(ContentHandler):
         else:
             tokens = sent_tokenize(meta.message.content)  # Convert the message to sentences
             self._title = tokens[0]
-            self._description = ' '.join(tokens[1:]) if len(tokens) > 1 else None
+            self._description = " ".join(tokens[1:]) if len(tokens) > 1 else None
 
     @property
     def title(self) -> str:

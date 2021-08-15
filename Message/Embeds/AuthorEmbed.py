@@ -7,6 +7,7 @@ from Message.Embeds.Author import Author
 
 class AuthorEmbed(Embed, ABC):
     """An embed with an Author"""
+
     def __init__(self, author: Author, *args, **kwargs):
         self._author = author
         super().__init__(*args, **kwargs)

@@ -13,6 +13,7 @@ from Message.Embeds.Footer import Footer
 
 class NoneEmbed(Embed):
     """An embed without anything"""
+
     @property
     def author(self) -> Optional[Author]:
         """Returns the author of the embed, None will be returned for an embed without an author"""

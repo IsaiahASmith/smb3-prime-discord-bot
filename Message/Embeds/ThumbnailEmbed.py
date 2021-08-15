@@ -6,6 +6,7 @@ from Message.Embeds.Embed import Embed
 
 class ThumbnailEmbed(Embed, ABC):
     """An embed with an Author"""
+
     def __init__(self, thumbnail_url: str, *args, **kwargs):
         self._thumbnail_url = thumbnail_url
         super().__init__(*args, **kwargs)

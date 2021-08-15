@@ -19,12 +19,7 @@ from Message.Embeds.EmbedCreator.MetaMessage import MetaMessage
 class EmbedHandler:
     """Decomposes a message, client, and channel into the components of an embed"""
 
-    def __init__(
-            self,
-            embed: Type[Embed],
-            content_handler: Type[ContentHandler],
-            meta: MetaMessage
-    ):
+    def __init__(self, embed: Type[Embed], content_handler: Type[ContentHandler], meta: MetaMessage):
         self.embed = embed
         self.content_handler = content_handler(meta=meta)
         self.meta = meta
@@ -67,7 +62,7 @@ class EmbedHandler:
             name=self.message.author.name,
             colour=self.message.author.colour,
             url=self.message.author.avatar_url,
-            icon_url=self.message.author.avatar_url
+            icon_url=self.message.author.avatar_url,
         )
 
     async def create_embed(self) -> DiscordEmbed:
@@ -77,7 +72,7 @@ class EmbedHandler:
             language=self.language,
             current_language=self.current_language,
             author=self.author,
-            attachments=self.attachments
+            attachments=self.attachments,
         )
 
         return await embed.create_embed()
