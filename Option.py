@@ -12,6 +12,7 @@ from Response import Response
 @dataclass
 class Option:
     """A series of responses to choose from"""
+
     question: str
     description: str
     colour: Colour
@@ -21,10 +22,7 @@ class Option:
     def to_embed(self) -> Embed:
         """Creates an embed from itself"""
         embed = Embed(
-            title=self.question,
-            description=self.description,
-            colour=self.colour,
-            timestamp=datetime.utcnow()
+            title=self.question, description=self.description, colour=self.colour, timestamp=datetime.utcnow()
         )
 
         fields = [Field(response.name, response.description, False) for response in self.responses]

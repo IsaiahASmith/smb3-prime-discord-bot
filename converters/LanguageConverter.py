@@ -15,7 +15,7 @@ _language_codes = {
     "de": Language.german,
     "german": Language.german,
     "it": Language.italian,
-    "italian": Language.italian
+    "italian": Language.italian,
 }
 
 
@@ -27,5 +27,6 @@ def get_language(name: str) -> Optional[Language]:
 
 class LanguageConverter(Converter):
     """Tries and finds a valid ChannelGroup"""
+
     async def convert(self, ctx, argument) -> Optional[Language]:
         return get_language(argument)

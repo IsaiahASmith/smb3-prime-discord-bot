@@ -14,7 +14,7 @@ _permission_codes = {
     "rc": PermissionID.REGISTER_CHANNEL,
     "register_channel": PermissionID.REGISTER_CHANNEL,
     "uc": PermissionID.UNREGISTER_CHANNEL,
-    "unregister_channel": PermissionID.UNREGISTER_CHANNEL
+    "unregister_channel": PermissionID.UNREGISTER_CHANNEL,
 }
 
 
@@ -26,5 +26,6 @@ def get_permission(name: str) -> Optional[PermissionID]:
 
 class PermissionConverter(Converter):
     """Tries and finds a valid Permission"""
+
     async def convert(self, ctx: Context, argument: str) -> Optional[Permission]:
-        return Permission(guild=ctx.guild, permissions={get_permission(perm) for perm in argument.split(',')})
+        return Permission(guild=ctx.guild, permissions={get_permission(perm) for perm in argument.split(",")})

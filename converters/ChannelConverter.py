@@ -5,6 +5,7 @@ from database import session, Channel
 
 class ChannelConverter(TextChannelConverter):
     """An advanced TextChannelConverter, to automatically register channels the database"""
+
     async def convert(self, ctx, argument):
         channel = await super().convert(ctx, argument)
         sql_channel = session.query(Channel).filter(Channel.id == channel.id).first()

@@ -11,9 +11,9 @@ from database import ChannelGroup, session
 
 def validate_guild_from_similar_name(name: str, guild_id: int) -> Optional[List[ChannelGroup]]:
     """Tries to find groups with a similar name or None with respect to to permission"""
-    return [session.query(ChannelGroup).filter(
-            group for group in
-            (ChannelGroup.guild_id == guild_id) & (ChannelGroup.name.ilike(f"%{name}%"))
+    return [
+        session.query(ChannelGroup).filter(
+            group for group in (ChannelGroup.guild_id == guild_id) & (ChannelGroup.name.ilike(f"%{name}%"))
         )
     ]
 
@@ -21,8 +21,8 @@ def validate_guild_from_similar_name(name: str, guild_id: int) -> Optional[List[
 def validate_guild_from_name(name: str, guild_id: int) -> Optional[List[ChannelGroup]]:
     """Tries to find groups with valid names or None with respect to permission"""
     groups = [
-        group for group in
-        session.query(ChannelGroup).filter(
+        group
+        for group in session.query(ChannelGroup).filter(
             (ChannelGroup.guild_id == guild_id) & (ChannelGroup.name == name)
         )
     ]
@@ -35,6 +35,7 @@ def validate_guild_from_name(name: str, guild_id: int) -> Optional[List[ChannelG
 
 class ChannelGroupConverter(Converter):
     """Tries and finds a valid ChannelGroup"""
+
     async def convert(self, ctx, argument) -> Optional[ChannelGroup]:
         try:
             group_id = int(argument)
@@ -54,7 +55,7 @@ class ChannelGroupConverter(Converter):
                         Response(group.name, f":{emoji_names[idx]}:", get_emoji(ctx.guild, emoji_names[idx]))
                         for idx, group in enumerate(groups)
                     ],
-                    responders={ctx.author}
+                    responders={ctx.author},
                 )
                 selected_option = await option_cog.ask_for_options(ctx, option)
                 group_id = groups[selected_option].id
