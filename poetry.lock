@@ -407,6 +407,14 @@ optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
 [[package]]
+name = "perm-banana"
+version = "0.1.1"
+description = "A Bitwise Permission Handler"
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[[package]]
 name = "pluggy"
 version = "0.13.1"
 description = "plugin and hook calling mechanisms for python"
@@ -696,7 +704,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "4c19a2a9ba9a4ae6bfe6f90cf0b090be22f5ffc14d17864714efdf9f6e28a51f"
+content-hash = "395110a0dcd0e20c5fc479b731c12b5cf57e53c58404a0382b2a069dbb06acd2"
 
 [metadata.files]
 aiohttp = [
@@ -1112,6 +1120,10 @@ pathos = [
 pathspec = [
     {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},
     {file = "pathspec-0.9.0.tar.gz", hash = "sha256:e564499435a2673d586f6b2130bb5b95f04a3ba06f81b8f895b651a3c76aabb1"},
+]
+perm-banana = [
+    {file = "perm_banana-0.1.1-py3-none-any.whl", hash = "sha256:1307d1e6c4f088d63bfeed92bc6f1576e1911701249b5e3fc8004ca558a9bd91"},
+    {file = "perm_banana-0.1.1.tar.gz", hash = "sha256:c497966e593bcbb06fd0efeee416b06070580d651f50c07f06614fb2c544f3c1"},
 ]
 pluggy = [
     {file = "pluggy-0.13.1-py2.py3-none-any.whl", hash = "sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d"},

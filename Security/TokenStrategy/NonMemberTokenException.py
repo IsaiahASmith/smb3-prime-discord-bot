@@ -1,5 +1,6 @@
-from Security.Permission import Permission
-from Security.SecureMemberAdapter import SecureMemberAdapter
+from perm_banana import Permission
+
+from Security.MemberAdapter.MemberAdapter import MemberAdapter
 
 
 class NonMemberTokenException(Exception):
@@ -7,18 +8,12 @@ class NonMemberTokenException(Exception):
     An error that is raised when no members are provided.
     """
 
-    def __init__(
-            self,
-            secure_member: SecureMemberAdapter,
-            permissions: Permission,
-            uses: int = 1,
-            duration: float = 60.0
-    ):
-        self.secure_member = secure_member
+    def __init__(self, member: MemberAdapter, permissions: Permission, uses: int, duration: float):
+        self.member = member
         self.permissions = permissions
         self.uses = uses
         self.duration = duration
         super().__init__(
-            f"{self.secure_member} did not provide any members for their token with "
+            f"{self.member} did not provide any members for their token with "
             f"permissions: {self.permissions}, {self.uses} uses, and a duration of {self.duration}"
         )

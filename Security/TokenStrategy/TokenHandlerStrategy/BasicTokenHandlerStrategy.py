@@ -1,15 +1,14 @@
-from typing import Optional, Generator, Dict, Set
+from typing import Generator, Dict, Set
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from discord import Member, TextChannel, Guild
-
+from Security import validate
 from Security.Token import Token
-from Security.Permission import Permission
+from Security.MemberAdapter.MemberAdapter import MemberAdapter
 
 from .TokenHandlerStrategy import TokenHandlerStrategy
 
 
-def token_id_generator() -> Generator[int]:
+def token_id_generator() -> Generator[int, None, None]:
     """Generates a new token id each call"""
     token_id = 0
     while True:
@@ -25,22 +24,27 @@ class BasicTokenHandlerStrategy(TokenHandlerStrategy):
         self._id_generator = token_id_generator()
         self._tokens: Dict[int, Token] = {}
 
-    def get_tokens(self, member: Member, guild: Guild, channel: Optional[TextChannel] = None) -> Set[Token]:
-        """Provides all valid tokens for a given user"""
+    def get_token(self, token_id: int) -> Token:
+        return self._tokens[token_id]
 
-        permission = Permission(guild, channel, set())
+    def get_tokens(self, member: MemberAdapter) -> Set[int]:
         tokens = set()
         for token_id, token in self._tokens.items():
+            if not validate(token.author, member):
+                continue
             tokens.add(token_id)
-            permission.permissions.update(Permission.from_channel(guild, channel, token.permissions))
-
+        return tokens
 
     def add_token(self, token: Token, duration: float):
-        """Adds a token to be maintained"""
         token_id = next(self._id_generator)
         self._tokens.update({token_id: token})
         self._scheduler.add_job(lambda tid=token_id, *_: self.del_token(tid), seconds=duration)
 
+    def use_token(self, token_id: int):
+        token = self._tokens[token_id]
+        token.uses -= 1
+        if token.uses == 0:
+            self.del_token(token_id)
+
     def del_token(self, token_id: int):
-        """Deletes a token to no longer be maintained"""
         del self._tokens[token_id]

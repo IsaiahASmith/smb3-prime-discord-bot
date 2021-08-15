@@ -4,8 +4,9 @@ from functools import partialmethod
 
 from discord import Member, Message, TextChannel, Guild
 from discord.ext.commands import Cog, command, has_permissions, Greedy, Context, MissingPermissions, check
+from perm_banana import Permission
 
-from Security.Permission import Permission, Hole, TokenInvalidatedException
+from Security.Permission import Hole, TokenInvalidatedException
 from converters.PermissionConverter import PermissionConverter as PermConverter
 
 
@@ -27,10 +28,7 @@ class Security(Cog):
         self._pending_holes: Dict[int, Hole] = {}
 
     def get_holes(
-            self,
-            member: Optional[Member] = None,
-            channel: Optional[TextChannel] = None,
-            guild: Optional[Guild] = None
+        self, member: Optional[Member] = None, channel: Optional[TextChannel] = None, guild: Optional[Guild] = None
     ) -> Set[Hole]:
         """Fines a hole with a given set of information"""
         holes = set()
@@ -86,6 +84,7 @@ class Security(Cog):
 
     async def ask_user_for_password(self, author: Member, channel: TextChannel, password: str = ""):
         """Asks the user for a password"""
+
         def password_check(message: Message) -> bool:
             if author != message.author:
                 return False
@@ -96,7 +95,7 @@ class Security(Cog):
 
         await channel.send("DM me your password")
         try:
-            await self.bot.wait_for('direct_message', timeout=60.0, check=password_check)
+            await self.bot.wait_for("direct_message", timeout=60.0, check=password_check)
         except AsyncTimeoutError:
             await channel.send("Timeout")
             raise PasswordTimeout()
