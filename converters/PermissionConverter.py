@@ -1,31 +1,33 @@
-from typing import Optional
-
 from discord.ext.commands import Converter, Context
 
-from Security.Permission import Permission, PermissionID
+from Security.Permission.DiscordPermissions import TextChannelPermissions
 
-_permission_codes = {
-    "cg": PermissionID.CHANNEL_GROUPS,
-    "channel_groups": PermissionID.CHANNEL_GROUPS,
-    "rcg": PermissionID.REGISTER_CHANNEL_GROUP,
-    "register_channel_group": PermissionID.REGISTER_CHANNEL_GROUP,
-    "rem_cg": PermissionID.REMOVE_CHANNEL_GROUP,
-    "remove_channel_group": PermissionID.REMOVE_CHANNEL_GROUP,
-    "rc": PermissionID.REGISTER_CHANNEL,
-    "register_channel": PermissionID.REGISTER_CHANNEL,
-    "uc": PermissionID.UNREGISTER_CHANNEL,
-    "unregister_channel": PermissionID.UNREGISTER_CHANNEL,
+
+_channel_permissions = {
+    "create_instant_invite": TextChannelPermissions.create_instant_invite,
+    "manage_channels": TextChannelPermissions.manage_channels,
+    "add_reactions": TextChannelPermissions.add_reactions,
+    "view_channel": TextChannelPermissions.view_channel,
+    "send_messages": TextChannelPermissions.send_messages,
+    "send_tts_messages": TextChannelPermissions.send_tts_messages,
+    "manage_messages": TextChannelPermissions.manage_messages,
+    "embed_links": TextChannelPermissions.embed_links,
+    "attach_files": TextChannelPermissions.attach_files,
+    "read_message_history": TextChannelPermissions.read_message_history,
+    "mention_everyone": TextChannelPermissions.mention_everyone,
+    "use_external_emojis": TextChannelPermissions.use_external_emojis,
+    "manage_roles": TextChannelPermissions.manage_roles,
+    "manage_webhooks": TextChannelPermissions.manage_webhooks,
+    "use_application_commands": TextChannelPermissions.use_application_commands,
+    "manage_threads": TextChannelPermissions.manage_threads,
+    "use_public_threads": TextChannelPermissions.use_public_threads,
+    "use_private_threads": TextChannelPermissions.use_private_threads,
+    "use_external_stickers": TextChannelPermissions.use_external_stickers,
 }
 
 
-def get_permission(name: str) -> Optional[PermissionID]:
-    name = name.lower()
-    if name in _permission_codes:
-        return _permission_codes[name]
-
-
-class PermissionConverter(Converter):
+class PermissionChannelConverter(Converter):
     """Tries and finds a valid Permission"""
 
-    async def convert(self, ctx: Context, argument: str) -> Optional[Permission]:
-        return Permission(guild=ctx.guild, permissions={get_permission(perm) for perm in argument.split(",")})
+    async def convert(self, ctx: Context, argument: str) -> TextChannelPermissions:
+        return TextChannelPermissions.from_checks(_channel_permissions[check] for check in argument.split(","))
