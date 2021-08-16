@@ -17,8 +17,6 @@ from Message.MessageCreator import MessageCopyCreator
 from ChannelAdapter import ChannelAdapter
 from Field import Field
 
-from prefix import prefix
-
 
 def get_groups_by_guild(guild_id: int):
     """Finds all the groups a guild has"""
