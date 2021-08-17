@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from Language import Language
 
-engine = create_engine("sqlite:////tmp/data.db")
+engine = create_engine("sqlite:///:memory:")
 Base = declarative_base(engine)
 metadata = Base.metadata
 Session = sessionmaker(bind=engine)
