@@ -38,13 +38,30 @@ class BasicTokenHandlerStrategy(TokenHandlerStrategy):
     def add_token(self, token: Token, duration: float):
         token_id = next(self._id_generator)
         self._tokens.update({token_id: token})
-        self._scheduler.add_job(lambda tid=token_id, *_: self.del_token(tid), seconds=duration)
+
+        # Schedule the Token for deletion after the duration specified.
+        self._scheduler.add_job(
+            lambda tid=token_id, *_: self._do_token_job(tid), "interval", seconds=5, id=f"token_{token_id}"
+        )
+        self._scheduler.start()
 
     def use_token(self, token_id: int):
         token = self._tokens[token_id]
         token.uses -= 1
         if token.uses == 0:
             self.del_token(token_id)
+
+    def _do_token_job(self, token_id: int):
+        """
+        Deletes a token and its job from the Scheduler, to prevent it calling this method multiple times.
+
+        Parameters
+        ----------
+        token_id : int
+            The Token ID to be deleted.
+        """
+        self._scheduler.remove_job(f"token_{token_id}")
+        self.del_token(token_id)
 
     def del_token(self, token_id: int):
         del self._tokens[token_id]
