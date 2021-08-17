@@ -1,4 +1,4 @@
-from typing import List, Set, Optional
+from typing import List, Optional
 from asyncio import sleep
 from asyncio import TimeoutError as AsyncTimeoutError
 from datetime import datetime
@@ -8,7 +8,7 @@ from discord.ext.commands import Cog, command, has_permissions, Greedy
 
 from converters.ChannelConverter import ChannelConverter
 from converters.ChannelGroupConverter import ChannelGroupConverter
-from database import session, Channel, ChannelGroup, ChannelGroupChannel
+from database import session, ChannelGroup, ChannelGroupChannel, Guild
 
 from cogs.security import Security
 
@@ -18,11 +18,6 @@ from ChannelAdapter import ChannelAdapter
 from Field import Field
 
 from prefix import prefix
-
-
-def get_groups_by_guild(guild_id: int):
-    """Finds all the groups a guild has"""
-    return session.query(ChannelGroup).filter(ChannelGroup.guild_id == guild_id)
 
 
 def list_groups_to_embed(
@@ -38,43 +33,20 @@ def list_groups_to_embed(
     return embed
 
 
-def get_group_channels(group: ChannelGroup) -> Set[Channel]:
-    """Finds every channel a group contains"""
-    return {
-        channel
-        for channel in session.query(Channel)
-        .join(ChannelGroupChannel)
-        .filter(ChannelGroupChannel.channel_group_id == group.id)
-    }
-
-
 def group_to_embed(bot, group: ChannelGroup, title: str = "Channel Group", colour: Optional[Colour] = None) -> Embed:
     """Provides an embed for a group"""
     colour = colour or Colour.default()
     embed = Embed(title=title, colour=colour, timestamp=datetime.utcnow())
 
-    channels = get_group_channels(group)
-
     fields = [
         Field(f"Group: {group.name}", f"ID: {group.id}", False),
-        *[Field(bot.get_channel(channel.id).name, channel.id, True) for channel in channels],
+        *[Field(bot.get_channel(channel.id).name, channel.id, True) for channel in group.channels],
     ]
 
     for field in fields:
         field.add_to_embed(embed)
 
     return embed
-
-
-def get_groups_from_channel(channel: TextChannel) -> Set[ChannelGroup]:
-    """Finds every group a channel is associated with"""
-    return {
-        group
-        for group in session.query(ChannelGroup)
-        .join(ChannelGroupChannel)
-        .join(Channel)
-        .filter(channel.id == ChannelGroupChannel.channel_id)
-    }
 
 
 class ChannelManager(Cog):
@@ -84,8 +56,7 @@ class ChannelManager(Cog):
     @command(name="channel_groups", aliases=["cg"])
     @has_permissions(manage_guild=True)
     async def channel_groups(self, ctx):
-        groups = get_groups_by_guild(ctx.guild.id)
-        embed = list_groups_to_embed(groups, colour=ctx.author.colour)
+        embed = list_groups_to_embed(Guild.query.get(ctx.guild.id).channel_groups, colour=ctx.author.colour)
         await ctx.send(embed=embed)
 
     @command(name="register_channel_group", aliases=["rcg"])
