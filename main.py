@@ -20,7 +20,7 @@ class Bot(BotBase):
         self.guild = None
         self.scheduler = AsyncIOScheduler()
 
-        super().__init__(command_prefix=get_prefix, owner_id=environ["TOKEN"], intents=Intents.all())
+        super().__init__(command_prefix=get_prefix, owner_id=environ.get("DISCORD_TOKEN_TEST"), intents=Intents.all())
 
     def setup(self):
         print("running setup")
@@ -33,7 +33,7 @@ class Bot(BotBase):
         self.setup()
 
         print("running bot")
-        super().run(environ["TOKEN"], reconnect=True)
+        super().run(environ.get("DISCORD_TOKEN_TEST"), reconnect=True)
 
     async def on_connect(self):
         print("We have logged in")
