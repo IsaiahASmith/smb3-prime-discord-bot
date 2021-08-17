@@ -1,4 +1,6 @@
-from perm_banana import banana, Check, Permission
+from perm_banana.banana import banana
+from perm_banana.Check import Check
+from perm_banana.Permission import Permission
 from discord import Member, TextChannel, StageChannel, VoiceChannel
 
 
