@@ -4,11 +4,11 @@ from asyncio import TimeoutError as AsyncTimeoutError
 from discord import Member, Message, TextChannel
 from discord.ext.commands import Cog, command, has_permissions, Greedy, Context
 
-from converters.PermissionConverter import PermissionChannelConverter
+from perm_security.converters.PermissionChannelConverter import PermissionChannelConverter
 
-from Security.MemberAdapter.MemberChannelAdapter import MemberChannelAdapter
-from Security.TokenStrategy.BasicTokenStrategy import BasicTokenStrategy
-from Security.TokenStrategy.TokenHandlerStrategy.BasicTokenHandlerStrategy import BasicTokenHandlerStrategy
+from perm_security.MemberAdapter.MemberChannelAdapter import MemberChannelAdapter
+from perm_security.TokenStrategy.BasicTokenStrategy import BasicTokenStrategy
+from perm_security.TokenStrategy.TokenHandlerStrategy.BasicTokenHandlerStrategy import BasicTokenHandlerStrategy
 
 
 class PasswordTimeout(Exception):

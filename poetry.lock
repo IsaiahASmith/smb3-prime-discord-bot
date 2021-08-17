@@ -445,6 +445,19 @@ optional = false
 python-versions = ">=3.7,<4.0"
 
 [[package]]
+name = "perm-security"
+version = "0.2.0"
+description = "A package to bridge the gap between Discord's API and Perm-Banana"
+category = "main"
+optional = false
+python-versions = ">=3.9,<4.0"
+
+[package.dependencies]
+APScheduler = ">=3.7.0,<4.0.0"
+discord = ">=1.7.3,<2.0.0"
+perm-banana = ">=0.1.1,<0.2.0"
+
+[[package]]
 name = "pluggy"
 version = "0.13.1"
 description = "plugin and hook calling mechanisms for python"
@@ -750,7 +763,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "8c37263eca2f63136b8915705e34b07de8558790a458372e31b555ac5ed8d372"
+content-hash = "cf638747d72ea84d02b7d7f4e9d699bddb9bf478a1f09cf9404ccd250c02c971"
 
 [metadata.files]
 aiohttp = [
@@ -1178,6 +1191,10 @@ pathspec = [
 perm-banana = [
     {file = "perm_banana-0.1.1-py3-none-any.whl", hash = "sha256:1307d1e6c4f088d63bfeed92bc6f1576e1911701249b5e3fc8004ca558a9bd91"},
     {file = "perm_banana-0.1.1.tar.gz", hash = "sha256:c497966e593bcbb06fd0efeee416b06070580d651f50c07f06614fb2c544f3c1"},
+]
+perm-security = [
+    {file = "perm_security-0.2.0-py3-none-any.whl", hash = "sha256:a61625e9869294cd12668327fe0262b610f2c46ed17c824198571cba2dabbdca"},
+    {file = "perm_security-0.2.0.tar.gz", hash = "sha256:35dbfa99f89cf5f666e3446adeaa9c8d9c0d990d47079cea653455f9217500e9"},
 ]
 pluggy = [
     {file = "pluggy-0.13.1-py2.py3-none-any.whl", hash = "sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d"},

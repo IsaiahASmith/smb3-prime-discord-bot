@@ -14,8 +14,8 @@ translators = "^4.8.1"
 SQLAlchemy = "^1.4.22"
 bcrypt = "^3.2.0"
 cachetools = "^4.2.2"
-perm-banana = "^0.1.1"
 nltk = "^3.6.2"
+perm-security = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
