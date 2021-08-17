@@ -17,6 +17,8 @@ from Message.MessageCreator import MessageCopyCreator
 from ChannelAdapter import ChannelAdapter
 from Field import Field
 
+from prefix import prefix
+
 
 def get_groups_by_guild(guild_id: int):
     """Finds all the groups a guild has"""
@@ -169,11 +171,24 @@ class ChannelManager(Cog):
         await ctx.send(embed=embed)
 
     @Cog.listener()
-    async def on_conversation(self, message):
+    async def on_message(self, message):
         sender_cog = self.bot.cogs_lookup["sender"]
 
+        if message.author.bot or message.content.startswith(prefix(message.guild)):
+            return
+
+        if not isinstance(message.channel, TextChannel):
+            return
+
+        channel = ChannelAdapter.from_discord_channel(message.channel)
+        if channel.channel is None:
+            return
+        groups = channel.channel.groups
+        if groups is None:
+            return
+
         await sender_cog.send_once(
-            ChannelAdapter.from_discord_channel(message.channel).groups,
+            groups,
             MessageCopyCreator(message),
             {message.channel.id},
         )
