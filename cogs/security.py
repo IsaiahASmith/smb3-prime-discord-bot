@@ -19,7 +19,7 @@ class PasswordTimeout(Exception):
 class Security(Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.toke_strategy = BasicTokenStrategy(BasicTokenHandlerStrategy(bot.scheduler))
+        self.token_strategy = BasicTokenStrategy(BasicTokenHandlerStrategy(bot.scheduler))
 
     async def ask_user_for_password(self, author: Member, channel: TextChannel, password: str = "") -> str:
         """Asks the user for a password"""
@@ -50,7 +50,7 @@ class Security(Cog):
         self,
         ctx: Context,
         permissions: PermissionChannelConverter,
-        members: Optional[Greedy[Member]],
+        members: Greedy[Member],
         uses: int = 1,
         duration: float = 60.0,
     ):
@@ -58,7 +58,7 @@ class Security(Cog):
         author = MemberChannelAdapter(ctx.author, ctx.channel)
         if members is not None:
             members = set(members)
-        self.token_strategy.generate_token(author, permissions, members, uses, duration)
+        await self.token_strategy.generate_token(author, permissions, members, uses, duration)
 
 
 def setup(bot):
