@@ -30,4 +30,5 @@ class PermissionChannelConverter(Converter):
     """Tries and finds a valid Permission"""
 
     async def convert(self, ctx: Context, argument: str) -> TextChannelPermissions:
-        return TextChannelPermissions.from_checks(_channel_permissions[check] for check in argument.split(","))
+        checks = [_channel_permissions[check] for check in argument.split(",")]
+        return TextChannelPermissions.from_checks(*checks)
