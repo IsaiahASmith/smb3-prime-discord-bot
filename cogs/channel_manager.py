@@ -1,16 +1,13 @@
 from typing import List, Optional
-from asyncio import sleep
-from asyncio import TimeoutError as AsyncTimeoutError
 from datetime import datetime
 
-from discord import Embed, Colour, TextChannel, Member, DMChannel
-from discord.ext.commands import Cog, command, has_permissions, Greedy
+from discord import Embed, Colour, TextChannel
+from discord.ext.commands import Cog, command, has_permissions
 
 from converters.ChannelConverter import ChannelConverter
 from converters.ChannelGroupConverter import ChannelGroupConverter
 from database import session, ChannelGroup, ChannelGroupChannel, Guild
 
-from cogs.security import Security
 
 from Message.MessageCreator import MessageCopyCreator
 
